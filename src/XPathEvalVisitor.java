@@ -6,17 +6,15 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.HashMap;
+import java.lang.reflect.Array;
+import java.util.*;
 
 
 public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     private ArrayList<Node> curr = new ArrayList();
     private HashMap<String, ArrayList<Node>> varMap = new HashMap<>();
-    private Document inputDoc;
+    private Stack<HashMap<String, ArrayList<Node>>> mapStack = new Stack<>();
+    private Document inputDoc, outputDoc;
 
     @Override
     public ArrayList<Node> visitDoc(XPathParser.DocContext ctx) {
@@ -347,17 +345,150 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
 
     @Override
     public ArrayList<Node> visitXq_descendant(XPathParser.Xq_descendantContext ctx) {
-        return super.visitXq_descendant(ctx);
+        ArrayList<Node> ret = visit(ctx.xq());
+        curr = ret;
+        Set<Node> ret1 = new HashSet<Node>(visit(ctx.rp()));
+        ArrayList<Node> result = new ArrayList<>(ret1);
+        return result;
     }
 
     @Override
     public ArrayList<Node> visitXq_all(XPathParser.Xq_allContext ctx) {
-        return super.visitXq_all(ctx);
+        ArrayList<Node> ret = visit(ctx.xq());
+        curr = ret;
+        LinkedList<Node> tmp = new LinkedList<>(curr);
+        ArrayList<Node> res = new ArrayList<>(curr);
+        while(!tmp.isEmpty()) {
+            Node n = tmp.poll();
+            tmp.addAll(getChildren(n));
+            res.addAll(getChildren(n));
+        }
+        curr = res;
+        Set<Node> ret1 = new HashSet<Node>(visit(ctx.rp()));
+        ArrayList<Node> result = new ArrayList<>(ret1);
+        return result;
     }
+
+    @Override
+    public ArrayList<Node> visitXq_tag(XPathParser.Xq_tagContext ctx) {
+        String tagName = ctx.beginTag().NAME().getText();
+        if (!tagName.equals(ctx.endTag().NAME().getText())) {
+            throw new RuntimeException("Invalid tag name");
+        }
+        ArrayList<Node> ret = visit(ctx.xq());
+        ArrayList<Node> result = new ArrayList<>();
+        result.add(makeElem(tagName, ret));
+
+        return result;
+    }
+
+
+    @Override
+    public ArrayList<Node> visitXq_FLWR(XPathParser.Xq_FLWRContext ctx) {
+        HashMap<String, ArrayList<Node>> preMap = new HashMap<>(varMap);
+        mapStack.push(preMap);
+
+        ArrayList<Node> result = new ArrayList<>();
+        FLWRHelper(ctx, 0, result);
+
+        varMap = mapStack.pop();
+        curr = result;          // whether need to update
+        return result;
+    }
+
+
+    private void FLWRHelper(XPathParser.Xq_FLWRContext ctx, int index, ArrayList<Node> result) {
+        if (index >= ctx.forClause().var().size()) {
+            if (ctx.letClause() != null) {
+                visit(ctx.letClause());
+            }
+            if (ctx.whereClause() != null) {
+                ArrayList<Node> whereRes = visit(ctx.whereClause());
+                if(!whereRes.isEmpty()){
+                    result.addAll(visit(ctx.returnClause()));
+                }
+            }
+            else {
+                result.addAll(visit(ctx.returnClause()));
+            }
+            return;
+        }
+        ArrayList<Node> ret = visit(ctx.forClause().xq(index));
+        String varName = ctx.forClause().var(index).getText();
+        for (Node n : ret) {
+            HashMap<String, ArrayList<Node>> preMap = new HashMap<>(varMap);
+            mapStack.push(preMap);
+            ArrayList<Node> tmp = new ArrayList<>();
+            tmp.add(n);
+            varMap.put(varName, tmp);
+            FLWRHelper(ctx, index+1, result);
+            varMap = mapStack.pop();
+        }
+        return;
+    }
+
+    // not sure about the order
+    @Override
+    public ArrayList<Node> visitXq_let(XPathParser.Xq_letContext ctx) {
+        HashMap<String, ArrayList<Node>> preMap = new HashMap<>(varMap);
+        mapStack.push(preMap);
+        visit(ctx.letClause());
+        ArrayList<Node> result = visit(ctx.xq());
+        varMap = mapStack.pop();
+        return result;
+    }
+
+    @Override
+    public ArrayList<Node> visitForClause(XPathParser.ForClauseContext ctx) {
+        return super.visitForClause(ctx);
+    }
+
+
+    @Override
+    public ArrayList<Node> visitLetClause(XPathParser.LetClauseContext ctx) {
+        for (int i = 0; i < ctx.var().size(); i++) {
+            varMap.put(ctx.var(i).getText(), visit(ctx.xq(i)));
+        }
+        return null;
+    }
+
+
+    @Override
+    public ArrayList<Node> visitWhereClause(XPathParser.WhereClauseContext ctx) {
+        return visit(ctx.cond());
+    }
+
+
+    @Override
+    public ArrayList<Node> visitReturnClause(XPathParser.ReturnClauseContext ctx) {
+        return this.visit(ctx.xq());
+    }
+
 
     private Node makeText(String s) {
         Document doc = inputDoc;
         return doc.createTextNode(s);
+    }
+
+
+    private Node makeElem(String tagName, ArrayList<Node> listOfNode) {
+        if (outputDoc == null) {
+            try {
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                DocumentBuilder db = dbf.newDocumentBuilder();
+                outputDoc = db.newDocument();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        Node tag = outputDoc.createElement(tagName);
+        for (Node node : listOfNode) {
+            if (node != null) {
+                Node importedNode = outputDoc.importNode(node, true);
+                tag.appendChild(importedNode);
+            }
+        }
+        return tag;
     }
 
 }
