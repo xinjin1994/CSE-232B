@@ -10,9 +10,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.HashMap;
+
 
 public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     private ArrayList<Node> curr = new ArrayList();
+    private HashMap<String, ArrayList<Node>> varMap = new HashMap<>();
+    private Document inputDoc;
 
     @Override
     public ArrayList<Node> visitDoc(XPathParser.DocContext ctx) {
@@ -25,12 +29,13 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
             doc = db.parse(file);
+            inputDoc = doc;
         }
         catch(Exception e){
             e.printStackTrace();
         }
-        if(doc != null) {
-            doc.getDocumentElement().normalize();
+        if(inputDoc != null) {
+            inputDoc.getDocumentElement().normalize();
             ret.add(doc);
         }
         curr = ret;
@@ -193,7 +198,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
 
     @Override
     public ArrayList<Node> visitRp_combine(XPathParser.Rp_combineContext ctx) {
-        ArrayList<Node> tmp = curr;
+        ArrayList<Node> tmp = new ArrayList<>(curr);
         ArrayList<Node> ret = visit(ctx.rp(0));
         curr = tmp;
         ret.addAll(visit(ctx.rp(1)));
@@ -203,7 +208,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
 
     @Override
     public ArrayList<Node> visitFilter_rp(XPathParser.Filter_rpContext ctx) {
-        ArrayList<Node> tmp = curr;
+        ArrayList<Node> tmp = new ArrayList<>(curr);
         ArrayList<Node> ret = visit(ctx.rp());
         curr = tmp;
         return ret;
@@ -212,11 +217,11 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
 
     @Override
     public ArrayList<Node> visitFilter_equal(XPathParser.Filter_equalContext ctx) {
-        ArrayList<Node> tmp = curr;
+        ArrayList<Node> tmp = new ArrayList<>(curr);
         ArrayList<Node> ret1 = this.visit(ctx.rp(0));
-        curr = tmp;
+        curr = new ArrayList<>(tmp);
         ArrayList<Node> ret2 = this.visit(ctx.rp(1));
-        curr = tmp;
+        curr = new ArrayList<>(tmp);
         boolean flag = false;
         for(Node n1 : ret1) {
             for(Node n2 :ret2) {
@@ -233,11 +238,11 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
 
     @Override
     public ArrayList<Node> visitFilter_is(XPathParser.Filter_isContext ctx) {
-        ArrayList<Node> tmp = curr;
+        ArrayList<Node> tmp = new ArrayList<>(curr);
         ArrayList<Node> ret1 = this.visit(ctx.rp(0));
-        curr = tmp;
+        curr = new ArrayList<>(tmp);
         ArrayList<Node> ret2 = this.visit(ctx.rp(1));
-        curr = tmp;
+        curr = new ArrayList<>(tmp);
         boolean flag = false;
         for(Node n1 : ret1) {
             for(Node n2 :ret2) {
@@ -261,25 +266,23 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
 
     @Override
     public ArrayList<Node> visitFilter_and(XPathParser.Filter_andContext ctx) {
-        ArrayList<Node> tmp = curr;
+        ArrayList<Node> tmp = new ArrayList<>(curr);
         Set<Node> ret1 = new HashSet<Node>(visit(ctx.filter(0)));
-        curr = tmp;
+        curr = new ArrayList<>(tmp);
         Set<Node> ret2 = new HashSet<Node>(visit(ctx.filter(0)));
-        curr = tmp;
         ret1.retainAll(ret2);
-        curr = new ArrayList<Node>(ret1);
+        curr = new ArrayList<>(ret1);
         return curr;
     }
 
     @Override
     public ArrayList<Node> visitFilter_or(XPathParser.Filter_orContext ctx) {
-        ArrayList<Node> tmp = curr;
+        ArrayList<Node> tmp = new ArrayList<>(curr);
         Set<Node> ret1 = new HashSet<Node>(visit(ctx.filter(0)));
-        curr = tmp;
+        curr = new ArrayList<>(tmp);
         Set<Node> ret2 = new HashSet<Node>(visit(ctx.filter(0)));
-        curr = tmp;
         ret1.addAll(ret2);
-        curr = new ArrayList<Node>(ret1);
+        curr = new ArrayList<>(ret1);
         return curr;
     }
 
@@ -301,18 +304,60 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
 
     @Override
     public ArrayList<Node> visitXq_var(XPathParser.Xq_varContext ctx) {
-        return super.visitXq_var(ctx);
+        String varName = ctx.var().NAME().getText();
+        ArrayList<Node> result = new ArrayList<>();
+        result.addAll(varMap.get(varName));
+        if (result.isEmpty()) {
+            throw new RuntimeException("no such variable: " + varName);
+        }
+        return result;
     }
 
     @Override
     public ArrayList<Node> visitXq_strConstant(XPathParser.Xq_strConstantContext ctx) {
-        return super.visitXq_strConstant(ctx);
+        String str = ctx.stringConstant().getText();
+        String s = str.substring(1, str.length() - 1);
+        ArrayList<Node> result = new ArrayList<>();
+        result.add(makeText(s));
+        return result;
     }
+
 
     @Override
     public ArrayList<Node> visitXq_ap(XPathParser.Xq_apContext ctx) {
-        return super.visitXq_ap(ctx);
+        return visit(ctx.ap());
     }
 
+
+    @Override
+    public ArrayList<Node> visitXq_paren(XPathParser.Xq_parenContext ctx) {
+        return visit(ctx.xq());
+    }
+
+
+    @Override
+    public ArrayList<Node> visitXq_combine(XPathParser.Xq_combineContext ctx) {
+        HashMap<String, ArrayList<Node>> preMap = new HashMap<>(varMap);
+        ArrayList<Node> result = visit(ctx.xq(0));
+        varMap = new HashMap<>(preMap);
+        result.addAll(visit(ctx.xq(1)));
+        varMap = new HashMap<>(preMap);
+        return super.visitXq_combine(ctx);
+    }
+
+    @Override
+    public ArrayList<Node> visitXq_descendant(XPathParser.Xq_descendantContext ctx) {
+        return super.visitXq_descendant(ctx);
+    }
+
+    @Override
+    public ArrayList<Node> visitXq_all(XPathParser.Xq_allContext ctx) {
+        return super.visitXq_all(ctx);
+    }
+
+    private Node makeText(String s) {
+        Document doc = inputDoc;
+        return doc.createTextNode(s);
+    }
 
 }
