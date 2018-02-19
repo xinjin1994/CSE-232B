@@ -59,9 +59,9 @@ cond
     |   'empty' '(' xq ')'  #cond_empty
     |   'some' var 'in' xq (',' var 'in' xq)* 'satisfies' cond  #cond_satisfy
     |   '(' cond ')'        #cond_paren
-    |   cond 'and' filter   #cond_and
-    |   filter 'or' filter  #cond_or
-    |   'not' filter        #cond_not
+    |   cond 'and' cond     #cond_and
+    |   cond 'or' cond      #cond_or
+    |   'not' cond          #cond_not
     ;
 
 filename

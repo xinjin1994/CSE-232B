@@ -254,7 +254,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
 
 
     @Override
-    public ArrayList<Node> visitFilter_paren(XPathParser.Filter_parentContext ctx) {
+    public ArrayList<Node> visitFilter_paren(XPathParser.Filter_parenContext ctx) {
         return this.visit(ctx.filter());
     }
 
@@ -298,4 +298,21 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         curr = ret;
         return curr;
     }
+
+    @Override
+    public ArrayList<Node> visitXq_var(XPathParser.Xq_varContext ctx) {
+        return super.visitXq_var(ctx);
+    }
+
+    @Override
+    public ArrayList<Node> visitXq_strConstant(XPathParser.Xq_strConstantContext ctx) {
+        return super.visitXq_strConstant(ctx);
+    }
+
+    @Override
+    public ArrayList<Node> visitXq_ap(XPathParser.Xq_apContext ctx) {
+        return super.visitXq_ap(ctx);
+    }
+
+
 }
