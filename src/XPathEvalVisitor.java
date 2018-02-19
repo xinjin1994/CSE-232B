@@ -254,7 +254,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
 
 
     @Override
-    public ArrayList<Node> visitFilter_parent(XPathParser.Filter_parentContext ctx) {
+    public ArrayList<Node> visitFilter_paren(XPathParser.Filter_parentContext ctx) {
         return this.visit(ctx.filter());
     }
 
