@@ -503,26 +503,6 @@ public interface XPathListener extends ParseTreeListener {
 	 */
 	void exitStringConstant(XPathParser.StringConstantContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link XPathParser#beginTag}.
-	 * @param ctx the parse tree
-	 */
-	void enterBeginTag(XPathParser.BeginTagContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link XPathParser#beginTag}.
-	 * @param ctx the parse tree
-	 */
-	void exitBeginTag(XPathParser.BeginTagContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link XPathParser#endTag}.
-	 * @param ctx the parse tree
-	 */
-	void enterEndTag(XPathParser.EndTagContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link XPathParser#endTag}.
-	 * @param ctx the parse tree
-	 */
-	void exitEndTag(XPathParser.EndTagContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link XPathParser#forClause}.
 	 * @param ctx the parse tree
 	 */

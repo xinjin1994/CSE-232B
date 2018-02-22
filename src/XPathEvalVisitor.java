@@ -16,6 +16,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     private Stack<HashMap<String, ArrayList<Node>>> mapStack = new Stack<>();
     private Document inputDoc, outputDoc;
 
+
     @Override
     public ArrayList<Node> visitDoc(XPathParser.DocContext ctx) {
         String filename = ctx.filename().PATH().getText();
@@ -75,15 +76,22 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     @Override
     public ArrayList<Node> visitRp_tagName(XPathParser.Rp_tagNameContext ctx) {
         ArrayList<Node> ret = new ArrayList<>();
+        int k = 0;
+        if(curr == null)
+            return ret;
         for(Node n : curr) {
-            for(Node child : getChildren(n)) {
-                if(child.getNodeType() == Node.ELEMENT_NODE) {
+            for(int i = 0; i < n.getChildNodes().getLength(); i++) {
+                Node child = n.getChildNodes().item(i);
+                if (child.getNodeType() == Node.ELEMENT_NODE) {
                     Element el = (Element) child;
-                    if(el.getNodeName().equals(ctx.getText())) {
+                    if (el.getNodeName().equals(ctx.NAME().getText())) {
+                        System.out.println(i + ctx.NAME().getText());
                         ret.add(child);
                     }
                 }
             }
+            System.out.println(k);
+            k++;
         }
         curr = ret;
         return ret;
@@ -304,10 +312,10 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     public ArrayList<Node> visitXq_var(XPathParser.Xq_varContext ctx) {
         String varName = ctx.var().NAME().getText();
         ArrayList<Node> result = new ArrayList<>();
-        result.addAll(varMap.get(varName));
-        if (result.isEmpty()) {
-            throw new RuntimeException("no such variable: " + varName);
-        }
+        result = varMap.get(varName);
+//        if (result.isEmpty()) {
+//            throw new RuntimeException("no such variable: " + varName);
+//        }
         return result;
     }
 
@@ -332,7 +340,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         return visit(ctx.xq());
     }
 
-
+    // do we need to update curr?
     @Override
     public ArrayList<Node> visitXq_combine(XPathParser.Xq_combineContext ctx) {
         HashMap<String, ArrayList<Node>> preMap = new HashMap<>(varMap);
@@ -347,7 +355,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     public ArrayList<Node> visitXq_descendant(XPathParser.Xq_descendantContext ctx) {
         ArrayList<Node> ret = visit(ctx.xq());
         curr = ret;
-        Set<Node> ret1 = new HashSet<Node>(visit(ctx.rp()));
+        Set<Node> ret1 = new HashSet<>(visit(ctx.rp()));
         ArrayList<Node> result = new ArrayList<>(ret1);
         return result;
     }
@@ -371,10 +379,10 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
 
     @Override
     public ArrayList<Node> visitXq_tag(XPathParser.Xq_tagContext ctx) {
-        String tagName = ctx.beginTag().NAME().getText();
-        if (!tagName.equals(ctx.endTag().NAME().getText())) {
-            throw new RuntimeException("Invalid tag name");
-        }
+        String tagName = ctx.NAME(0).getText();
+//        if (!tagName.equals(ctx.NAME(1).getText())) {
+//            throw new RuntimeException("Invalid tag name");
+//        }
         ArrayList<Node> ret = visit(ctx.xq());
         ArrayList<Node> result = new ArrayList<>();
         result.add(makeElem(tagName, ret));
@@ -404,7 +412,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
             }
             if (ctx.whereClause() != null) {
                 ArrayList<Node> whereRes = visit(ctx.whereClause());
-                if(!whereRes.isEmpty()){
+                if(!whereRes.isEmpty()) {
                     result.addAll(visit(ctx.returnClause()));
                 }
             }
@@ -452,6 +460,110 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         return null;
     }
 
+    @Override
+    public ArrayList<Node> visitCond_equal(XPathParser.Cond_equalContext ctx) {
+        ArrayList<Node> tmp = new ArrayList<>(curr);
+        ArrayList<Node> ret1 = visit(ctx.xq(0));
+        curr = new ArrayList<>(tmp);
+        ArrayList<Node> ret2 = visit(ctx.xq(1));
+        curr = new ArrayList<>(tmp);
+        ArrayList<Node> ret = new ArrayList<>();
+        for(Node n1 : ret1) {
+            for(Node n2 :ret2) {
+                if(n1.isEqualNode(n2)) {
+                    Node flag = null;
+                    ret.add(flag);
+                    return ret;
+                }
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public ArrayList<Node> visitCond_is(XPathParser.Cond_isContext ctx) {
+        ArrayList<Node> tmp = new ArrayList<>(curr);
+        ArrayList<Node> ret1 = visit(ctx.xq(0));
+        curr = new ArrayList<>(tmp);
+        ArrayList<Node> ret2 = visit(ctx.xq(1));
+        curr = new ArrayList<>(tmp);
+        ArrayList<Node> ret = new ArrayList<>();
+        for(Node node1 : ret1) {
+            for(Node node2 :ret2) {
+                if(node1 == node2) {
+                    Node flag = null;
+                    ret.add(flag);
+                    return ret;
+                }
+            }
+        }
+        return ret;
+    }
+
+    //need to think about it
+    @Override
+    public ArrayList<Node> visitCond_empty(XPathParser.Cond_emptyContext ctx) {
+        ArrayList<Node> result = visit(ctx.xq());
+        if (result.isEmpty()) {
+            ArrayList<Node> ret = new ArrayList<>();
+            Node flag = null;
+            ret.add(flag);
+            return ret;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public ArrayList<Node> visitCond_satisfy(XPathParser.Cond_satisfyContext ctx) {
+        for (int i = 0; i < ctx.var().size(); i++) {
+            String v = ctx.var(i).getText();
+            ArrayList<Node> ret = visit(ctx.xq(i));
+            varMap.put(v, ret);
+        }
+        return visit(ctx.cond());
+    }
+
+    @Override
+    public ArrayList<Node> visitCond_paren(XPathParser.Cond_parenContext ctx) {
+        return visit(ctx.cond());
+    }
+
+    @Override
+    public ArrayList<Node> visitCond_and(XPathParser.Cond_andContext ctx) {
+        ArrayList<Node> ret1 = visit(ctx.cond(0));
+        ArrayList<Node> ret2 = visit(ctx.cond(1));
+        if(!ret1.isEmpty() && !ret2.isEmpty()) {
+            return ret1;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public ArrayList<Node> visitCond_or(XPathParser.Cond_orContext ctx) {
+        ArrayList<Node> ret1 = visit(ctx.cond(0));
+        ArrayList<Node> ret2 = visit(ctx.cond(1));
+        if(!ret1.isEmpty()) {
+            return ret1;
+        }
+        if(!ret2.isEmpty()) {
+            return ret2;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public ArrayList<Node> visitCond_not(XPathParser.Cond_notContext ctx) {
+        ArrayList<Node> result = visit(ctx.cond());
+        if(!result.isEmpty()) {
+            return new ArrayList<>();
+        }
+        else {
+            ArrayList<Node> ret = new ArrayList<>();
+            Node tmp = null;
+            ret.add(tmp);
+            return ret;
+        }
+    }
 
     @Override
     public ArrayList<Node> visitWhereClause(XPathParser.WhereClauseContext ctx) {

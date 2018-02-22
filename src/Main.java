@@ -15,31 +15,28 @@ import javax.swing.JPanel;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        List<String> lines = Files.readAllLines(Paths.get("test.txt"), Charset.forName("UTF-8"));
-        for (String expr : lines) {
-            CharStream input = new ANTLRInputStream(expr);
-            XPathLexer lexer = new XPathLexer(input);
-            CommonTokenStream tokens = new CommonTokenStream(lexer);
-            XPathParser parser = new XPathParser(tokens);
-            ParseTree tree = parser.ap();
-            XPathEvalVisitor eval = new XPathEvalVisitor();
-            ArrayList<Node> finalResult = eval.visit(tree);
-            System.out.println(expr + "\n===========================================================================");
-            for (Node n : finalResult) {
-                System.out.println(n.getTextContent());
-            }
-            System.out.println(finalResult.size() + " results\n");
+        XPathLexer lexer = new XPathLexer(new ANTLRFileStream("/Users/yaxuanwang/Documents/Courses/CSE232/project/XQueryTest.txt"));
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
 
-            JFrame frame = new JFrame("Antlr AST");
-            JPanel panel = new JPanel();
-            TreeViewer viewr = new TreeViewer(Arrays.asList(
-                    parser.getRuleNames()),tree);
-            viewr.setScale(1.5);//scale a little
-            panel.add(viewr);
-            frame.add(panel);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(200,200);
-            frame.setVisible(true);
+        XPathParser parser = new XPathParser(tokens);
+        ParseTree tree = parser.xq();
+        XPathEvalVisitor eval = new XPathEvalVisitor();
+        ArrayList<Node> finalResult = eval.visit(tree);
+        System.out.println("\n===========================================================================");
+        for (Node n : finalResult) {
+            System.out.println(n.getTextContent());
         }
+        System.out.println(finalResult.size() + " results\n");
+
+//            JFrame frame = new JFrame("Antlr AST");
+//            JPanel panel = new JPanel();
+//            TreeViewer viewr = new TreeViewer(Arrays.asList(
+//                    parser.getRuleNames()),tree);
+//            viewr.setScale(1.5);//scale a little
+//            panel.add(viewr);
+//            frame.add(panel);
+//            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//            frame.setSize(200,200);
+//            frame.setVisible(true);
     }
 }

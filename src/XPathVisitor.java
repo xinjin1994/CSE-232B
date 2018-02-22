@@ -300,18 +300,6 @@ public interface XPathVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitStringConstant(XPathParser.StringConstantContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link XPathParser#beginTag}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBeginTag(XPathParser.BeginTagContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link XPathParser#endTag}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitEndTag(XPathParser.EndTagContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link XPathParser#forClause}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

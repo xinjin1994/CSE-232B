@@ -1,11 +1,8 @@
 grammar XPath;
 
-
 doc
-    :
-       DOC '(' filename ')'
+    :   'doc' '(' filename ')'
     ;
-
 
 ap
     :  doc '/' rp       # ap_descendant
@@ -46,7 +43,7 @@ xq
     |   xq ',' xq           #xq_combine
     |   xq '/' rp           #xq_descendant
     |   xq '//' rp          #xq_all
-    |   beginTag '{' xq '}' endTag  #xq_tag
+    |   '<' NAME '>' '{' xq '}' '<''/' NAME '>'  #xq_tag
     |   forClause letClause? whereClause? returnClause  #xq_FLWR
     |   letClause xq        #xq_let
     ;
@@ -73,16 +70,16 @@ var
     ;
 
 stringConstant
-    : STRING
+    :   STRING
     ;
 
-beginTag
-    : '<' NAME '>'
-    ;
-
-endTag
-    : '<' '/' NAME '>'
-    ;
+//beginTag
+//    : '<' NAME '>'
+//    ;
+//
+//endTag
+//    : '<' '/' NAME '>'
+//    ;
 
 forClause
     : 'for' (var 'in' xq ',' )* var 'in' xq
@@ -105,25 +102,17 @@ returnClause
  * ===========================
  */
 
-DOC
-    : 'doc'
-    ;
-
 NAME
     : [a-zA-Z0-9_-]+
     ;
 
-INTEGER
-    : '0'
-	| [1-9] [0-9]*
-    ;
 
 PATH
     :  '"' [A-Za-z0-9./_]+ '"'
     ;
 
 WHITESPACE
-    : [ \t\n\r]+ -> skip
+    : [ \t\n\r] + -> skip
     ;
 
 TEXT
@@ -131,5 +120,5 @@ TEXT
     ;
 
 STRING
-    :   '"' +[a-zA-Z0-9,.!?; ''""-]+ '"'
+    :   '"' +[a-zA-Z0-9,.!?; '"-]+ '"'
     ;
