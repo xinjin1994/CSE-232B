@@ -62,7 +62,7 @@ cond
     ;
 
 filename
-    :   PATH
+    :   STRING
     ;
 
 var
@@ -86,7 +86,7 @@ forClause
     ;
 
 letClause
-    :'let' (var '=' xq ',' )* var '=' xq
+    :'let' (var ':=' xq ',' )* var ':=' xq
     ;
 
 whereClause
@@ -107,10 +107,6 @@ NAME
     ;
 
 
-PATH
-    :  '"' [A-Za-z0-9./_]+ '"'
-    ;
-
 WHITESPACE
     : [ \t\n\r] + -> skip
     ;
@@ -120,5 +116,9 @@ TEXT
     ;
 
 STRING
-    :   '"' +[a-zA-Z0-9,.!?; '"-]+ '"'
+    :   '"' +[a-zA-Z0-9,.!?; _'"-]+ '"'
+    ;
+
+PATH
+    :  '"' [A-Za-z0-9./_]* '"'
     ;

@@ -19,7 +19,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
 
     @Override
     public ArrayList<Node> visitDoc(XPathParser.DocContext ctx) {
-        String filename = ctx.filename().PATH().getText();
+        String filename = ctx.filename().getText();
         filename = filename.substring(1, filename.length() - 1).replace("\"\"", "\"");
         File file = new File(filename);
         ArrayList<Node> ret = new ArrayList();
@@ -67,31 +67,23 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     @Override
     public ArrayList<Node> visitAp_descendant(XPathParser.Ap_descendantContext ctx) {
         this.visit(ctx.doc());
-        ArrayList<Node> ret = getChildren(curr.get(0));
-        curr = ret;
-        return this.visit(ctx.rp());
+        curr = visit(ctx.rp());
+        return curr;
     }
 
     //    not sure about the relation of tagName and node
     @Override
     public ArrayList<Node> visitRp_tagName(XPathParser.Rp_tagNameContext ctx) {
         ArrayList<Node> ret = new ArrayList<>();
-        int k = 0;
-        if(curr == null)
-            return ret;
         for(Node n : curr) {
-            for(int i = 0; i < n.getChildNodes().getLength(); i++) {
-                Node child = n.getChildNodes().item(i);
+            for(Node child: getChildren(n)) {
                 if (child.getNodeType() == Node.ELEMENT_NODE) {
                     Element el = (Element) child;
-                    if (el.getNodeName().equals(ctx.NAME().getText())) {
-                        System.out.println(i + ctx.NAME().getText());
+                    if (el.getTagName().equals(ctx.NAME().getText())) {
                         ret.add(child);
                     }
                 }
             }
-            System.out.println(k);
-            k++;
         }
         curr = ret;
         return ret;
@@ -132,7 +124,6 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         for(Node n : curr) {
             for(Node child : getChildren(n)) {
                 if(child.getNodeType() == Node.TEXT_NODE) {
-                    System.out.print(child.getTextContent());
                     ret.add(child);
                 }
             }
@@ -348,7 +339,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         varMap = new HashMap<>(preMap);
         result.addAll(visit(ctx.xq(1)));
         varMap = new HashMap<>(preMap);
-        return super.visitXq_combine(ctx);
+        return result;
     }
 
     @Override
@@ -422,7 +413,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
             return;
         }
         ArrayList<Node> ret = visit(ctx.forClause().xq(index));
-        String varName = ctx.forClause().var(index).getText();
+        String varName = ctx.forClause().var(index).NAME().getText();
         for (Node n : ret) {
             HashMap<String, ArrayList<Node>> preMap = new HashMap<>(varMap);
             mapStack.push(preMap);
@@ -455,7 +446,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     @Override
     public ArrayList<Node> visitLetClause(XPathParser.LetClauseContext ctx) {
         for (int i = 0; i < ctx.var().size(); i++) {
-            varMap.put(ctx.var(i).getText(), visit(ctx.xq(i)));
+            varMap.put(ctx.var(i).NAME().getText(), visit(ctx.xq(i)));
         }
         return null;
     }
@@ -468,8 +459,21 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         ArrayList<Node> ret2 = visit(ctx.xq(1));
         curr = new ArrayList<>(tmp);
         ArrayList<Node> ret = new ArrayList<>();
+//        if(ret1 == null && ret2 == null) {
+//            ArrayList<Node> list = new ArrayList<>();
+//            Node flag = null;
+//            list.add(flag);
+//            return list;
+//        }
         for(Node n1 : ret1) {
             for(Node n2 :ret2) {
+                if (n1.getNodeType() == Node.TEXT_NODE || n2.getNodeType() == Node.TEXT_NODE){
+                    if (n1.getTextContent().equals(n2.getTextContent())){
+                        Node flag = null;
+                        ret.add(flag);
+                        return ret;
+                    }
+                }
                 if(n1.isEqualNode(n2)) {
                     Node flag = null;
                     ret.add(flag);
@@ -516,9 +520,10 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     @Override
     public ArrayList<Node> visitCond_satisfy(XPathParser.Cond_satisfyContext ctx) {
         for (int i = 0; i < ctx.var().size(); i++) {
-            String v = ctx.var(i).getText();
-            ArrayList<Node> ret = visit(ctx.xq(i));
-            varMap.put(v, ret);
+            String v = ctx.var(i).NAME().getText();
+            Set<Node> ret = new HashSet<Node>(visit(ctx.xq(i)));
+            ArrayList<Node> res = new ArrayList<>(ret);
+            varMap.put(v, res);
         }
         return visit(ctx.cond());
     }

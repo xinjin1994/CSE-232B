@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<bookstore>
+
+    <book category="COOKING">
+        <title lang="en">Everyday Italian</title>
+        <author>
+            <first>Giada </first>
+            <last>De Laurentiis</last>
+        </author>
+        <year>2005</year>
+        <price>30.00</price>
+    </book>
+
+    <book category="CHILDREN">
+        <title lang="en">Harry Potter</title>
+        <author>
+            <first>J K. </first>
+            <last>Rowling</last>
+        </author>
+        <year>2005</year>
+        <price>29.99</price>
+    </book>
+
+    <book category="LITERATURE">
+        <title lang="en">LaoRenYuHai</title>
+        <author>
+            <first>John</first>
+            <last>Qin</last>
+        </author>
+        <year>2008</year>
+        <price>32.84</price>
+    </book>
+
+    <book category="LITERATURE">
+        <title lang="en">WoMenSa</title>
+        <author>
+            <first>John</first>
+            <last>Qin</last>
+        </author>
+        <year>2012</year>
+        <price>52.19</price>
+    </book>
+
+    <book category="LITERATURE">
+        <title lang="en">SanGuoYanYi</title>
+        <author>
+            <first>John</first>
+            <last>Qin</last>
+        </author>
+        <year>2005</year>
+        <price>29.99</price>
+    </book>
+
+    <book category="WEB">
+        <title lang="en">XQuery Kick Start</title>
+        <author>
+            <first>James</first>
+            <last>McGovern</last>
+        </author>
+        <author>
+            <first>Per </first>
+            <last>Bothner</last>
+        </author>
+        <author>
+            <first>Kurt </first>
+            <last>Cagle</last>
+        </author>
+        <author>
+            <first>James </first>
+            <last>Linn</last>
+        </author>
+        <author>
+            <first>Vaidyanathan </first>
+            <last>Nagarajan</last>
+        </author>
+        <year>2003</year>
+        <price>49.99</price>
+    </book>
+
+    <book category="WEB">
+        <title lang="en">Learning XML</title>
+        <author>
+            <first>Erik </first>
+            <last>T. Ray</last>
+        </author>
+        <year>2003</year>
+        <price>39.95</price>
+    </book>
+
+
+    <book category="WEB">
+        <title lang="en">Data on the Web</title>
+        <author>
+            <first>Erik </first>
+            <last>T. Ray</last>
+        </author>
+        <year>2003</year>
+        <price>39.95</price>
+    </book>
+
+</bookstore>

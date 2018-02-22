@@ -20,7 +20,7 @@ public class XPathParser extends Parser {
 		T__9=10, T__10=11, T__11=12, T__12=13, T__13=14, T__14=15, T__15=16, T__16=17, 
 		T__17=18, T__18=19, T__19=20, T__20=21, T__21=22, T__22=23, T__23=24, 
 		T__24=25, T__25=26, T__26=27, T__27=28, T__28=29, T__29=30, T__30=31, 
-		T__31=32, NAME=33, PATH=34, WHITESPACE=35, TEXT=36, STRING=37;
+		T__31=32, T__32=33, NAME=34, WHITESPACE=35, TEXT=36, STRING=37, PATH=38;
 	public static final int
 		RULE_doc = 0, RULE_ap = 1, RULE_rp = 2, RULE_filter = 3, RULE_xq = 4, 
 		RULE_cond = 5, RULE_filename = 6, RULE_var = 7, RULE_stringConstant = 8, 
@@ -34,13 +34,13 @@ public class XPathParser extends Parser {
 		null, "'doc'", "'('", "')'", "'/'", "'//'", "'*'", "'.'", "'..'", "'@'", 
 		"'['", "']'", "','", "'='", "'eq'", "'=='", "'is'", "'and'", "'or'", "'not'", 
 		"'<'", "'>'", "'{'", "'}'", "'empty'", "'some'", "'in'", "'satisfies'", 
-		"'$'", "'for'", "'let'", "'where'", "'return'", null, null, null, "'text()'"
+		"'$'", "'for'", "'let'", "':='", "'where'", "'return'", null, null, "'text()'"
 	};
 	private static final String[] _SYMBOLIC_NAMES = {
 		null, null, null, null, null, null, null, null, null, null, null, null, 
 		null, null, null, null, null, null, null, null, null, null, null, null, 
-		null, null, null, null, null, null, null, null, null, "NAME", "PATH", 
-		"WHITESPACE", "TEXT", "STRING"
+		null, null, null, null, null, null, null, null, null, null, "NAME", "WHITESPACE", 
+		"TEXT", "STRING", "PATH"
 	};
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
@@ -1284,7 +1284,7 @@ public class XPathParser extends Parser {
 				setState(135);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				if (_la==T__30) {
+				if (_la==T__31) {
 					{
 					setState(134);
 					whereClause();
@@ -1773,7 +1773,7 @@ public class XPathParser extends Parser {
 	}
 
 	public static class FilenameContext extends ParserRuleContext {
-		public TerminalNode PATH() { return getToken(XPathParser.PATH, 0); }
+		public TerminalNode STRING() { return getToken(XPathParser.STRING, 0); }
 		public FilenameContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -1800,7 +1800,7 @@ public class XPathParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(216);
-			match(PATH);
+			match(STRING);
 			}
 		}
 		catch (RecognitionException re) {
@@ -2033,7 +2033,7 @@ public class XPathParser extends Parser {
 					setState(239);
 					var();
 					setState(240);
-					match(T__12);
+					match(T__30);
 					setState(241);
 					xq(0);
 					setState(242);
@@ -2048,7 +2048,7 @@ public class XPathParser extends Parser {
 			setState(249);
 			var();
 			setState(250);
-			match(T__12);
+			match(T__30);
 			setState(251);
 			xq(0);
 			}
@@ -2094,7 +2094,7 @@ public class XPathParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(253);
-			match(T__30);
+			match(T__31);
 			setState(254);
 			cond(0);
 			}
@@ -2140,7 +2140,7 @@ public class XPathParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(256);
-			match(T__31);
+			match(T__32);
 			setState(257);
 			xq(0);
 			}
@@ -2213,7 +2213,7 @@ public class XPathParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\'\u0106\4\2\t\2\4"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3(\u0106\4\2\t\2\4"+
 		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t"+
 		"\13\4\f\t\f\4\r\t\r\4\16\t\16\3\2\3\2\3\2\3\2\3\2\3\3\3\3\3\3\3\3\3\3"+
 		"\3\3\3\3\3\3\5\3*\n\3\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4"+
@@ -2237,8 +2237,8 @@ public class XPathParser extends Parser {
 		"\2\2\2\32\u0102\3\2\2\2\34\35\7\3\2\2\35\36\7\4\2\2\36\37\5\16\b\2\37"+
 		" \7\5\2\2 \3\3\2\2\2!\"\5\2\2\2\"#\7\6\2\2#$\5\6\4\2$*\3\2\2\2%&\5\2\2"+
 		"\2&\'\7\7\2\2\'(\5\6\4\2(*\3\2\2\2)!\3\2\2\2)%\3\2\2\2*\5\3\2\2\2+,\b"+
-		"\4\1\2,8\7#\2\2-8\7\b\2\2.8\7\t\2\2/8\7\n\2\2\608\7&\2\2\61\62\7\13\2"+
-		"\2\628\7#\2\2\63\64\7\4\2\2\64\65\5\6\4\2\65\66\7\5\2\2\668\3\2\2\2\67"+
+		"\4\1\2,8\7$\2\2-8\7\b\2\2.8\7\t\2\2/8\7\n\2\2\608\7&\2\2\61\62\7\13\2"+
+		"\2\628\7$\2\2\63\64\7\4\2\2\64\65\5\6\4\2\65\66\7\5\2\2\668\3\2\2\2\67"+
 		"+\3\2\2\2\67-\3\2\2\2\67.\3\2\2\2\67/\3\2\2\2\67\60\3\2\2\2\67\61\3\2"+
 		"\2\2\67\63\3\2\2\28I\3\2\2\29:\f\6\2\2:;\7\6\2\2;H\5\6\4\7<=\f\5\2\2="+
 		">\7\7\2\2>H\5\6\4\6?@\f\3\2\2@A\7\16\2\2AH\5\6\4\4BC\f\4\2\2CD\7\f\2\2"+
@@ -2251,9 +2251,9 @@ public class XPathParser extends Parser {
 		"d^\3\2\2\2db\3\2\2\2en\3\2\2\2fg\f\5\2\2gh\7\23\2\2hm\5\b\5\6ij\f\4\2"+
 		"\2jk\7\24\2\2km\5\b\5\5lf\3\2\2\2li\3\2\2\2mp\3\2\2\2nl\3\2\2\2no\3\2"+
 		"\2\2o\t\3\2\2\2pn\3\2\2\2qr\b\6\1\2r\u0091\5\20\t\2s\u0091\5\22\n\2t\u0091"+
-		"\5\4\3\2uv\7\4\2\2vw\5\n\6\2wx\7\5\2\2x\u0091\3\2\2\2yz\7\26\2\2z{\7#"+
+		"\5\4\3\2uv\7\4\2\2vw\5\n\6\2wx\7\5\2\2x\u0091\3\2\2\2yz\7\26\2\2z{\7$"+
 		"\2\2{|\7\27\2\2|}\7\30\2\2}~\5\n\6\2~\177\7\31\2\2\177\u0080\7\26\2\2"+
-		"\u0080\u0081\7\6\2\2\u0081\u0082\7#\2\2\u0082\u0083\7\27\2\2\u0083\u0091"+
+		"\u0080\u0081\7\6\2\2\u0081\u0082\7$\2\2\u0082\u0083\7\27\2\2\u0083\u0091"+
 		"\3\2\2\2\u0084\u0086\5\24\13\2\u0085\u0087\5\26\f\2\u0086\u0085\3\2\2"+
 		"\2\u0086\u0087\3\2\2\2\u0087\u0089\3\2\2\2\u0088\u008a\5\30\r\2\u0089"+
 		"\u0088\3\2\2\2\u0089\u008a\3\2\2\2\u008a\u008b\3\2\2\2\u008b\u008c\5\32"+
@@ -2284,20 +2284,20 @@ public class XPathParser extends Parser {
 		"\u00d1\7\23\2\2\u00d1\u00d6\5\f\7\6\u00d2\u00d3\f\4\2\2\u00d3\u00d4\7"+
 		"\24\2\2\u00d4\u00d6\5\f\7\5\u00d5\u00cf\3\2\2\2\u00d5\u00d2\3\2\2\2\u00d6"+
 		"\u00d9\3\2\2\2\u00d7\u00d5\3\2\2\2\u00d7\u00d8\3\2\2\2\u00d8\r\3\2\2\2"+
-		"\u00d9\u00d7\3\2\2\2\u00da\u00db\7$\2\2\u00db\17\3\2\2\2\u00dc\u00dd\7"+
-		"\36\2\2\u00dd\u00de\7#\2\2\u00de\21\3\2\2\2\u00df\u00e0\7\'\2\2\u00e0"+
+		"\u00d9\u00d7\3\2\2\2\u00da\u00db\7\'\2\2\u00db\17\3\2\2\2\u00dc\u00dd"+
+		"\7\36\2\2\u00dd\u00de\7$\2\2\u00de\21\3\2\2\2\u00df\u00e0\7\'\2\2\u00e0"+
 		"\23\3\2\2\2\u00e1\u00e9\7\37\2\2\u00e2\u00e3\5\20\t\2\u00e3\u00e4\7\34"+
 		"\2\2\u00e4\u00e5\5\n\6\2\u00e5\u00e6\7\16\2\2\u00e6\u00e8\3\2\2\2\u00e7"+
 		"\u00e2\3\2\2\2\u00e8\u00eb\3\2\2\2\u00e9\u00e7\3\2\2\2\u00e9\u00ea\3\2"+
 		"\2\2\u00ea\u00ec\3\2\2\2\u00eb\u00e9\3\2\2\2\u00ec\u00ed\5\20\t\2\u00ed"+
 		"\u00ee\7\34\2\2\u00ee\u00ef\5\n\6\2\u00ef\25\3\2\2\2\u00f0\u00f8\7 \2"+
-		"\2\u00f1\u00f2\5\20\t\2\u00f2\u00f3\7\17\2\2\u00f3\u00f4\5\n\6\2\u00f4"+
-		"\u00f5\7\16\2\2\u00f5\u00f7\3\2\2\2\u00f6\u00f1\3\2\2\2\u00f7\u00fa\3"+
-		"\2\2\2\u00f8\u00f6\3\2\2\2\u00f8\u00f9\3\2\2\2\u00f9\u00fb\3\2\2\2\u00fa"+
-		"\u00f8\3\2\2\2\u00fb\u00fc\5\20\t\2\u00fc\u00fd\7\17\2\2\u00fd\u00fe\5"+
-		"\n\6\2\u00fe\27\3\2\2\2\u00ff\u0100\7!\2\2\u0100\u0101\5\f\7\2\u0101\31"+
-		"\3\2\2\2\u0102\u0103\7\"\2\2\u0103\u0104\5\n\6\2\u0104\33\3\2\2\2\24)"+
-		"\67GIdln\u0086\u0089\u0090\u009b\u009d\u00c1\u00cd\u00d5\u00d7\u00e9\u00f8";
+		"\2\u00f1\u00f2\5\20\t\2\u00f2\u00f3\7!\2\2\u00f3\u00f4\5\n\6\2\u00f4\u00f5"+
+		"\7\16\2\2\u00f5\u00f7\3\2\2\2\u00f6\u00f1\3\2\2\2\u00f7\u00fa\3\2\2\2"+
+		"\u00f8\u00f6\3\2\2\2\u00f8\u00f9\3\2\2\2\u00f9\u00fb\3\2\2\2\u00fa\u00f8"+
+		"\3\2\2\2\u00fb\u00fc\5\20\t\2\u00fc\u00fd\7!\2\2\u00fd\u00fe\5\n\6\2\u00fe"+
+		"\27\3\2\2\2\u00ff\u0100\7\"\2\2\u0100\u0101\5\f\7\2\u0101\31\3\2\2\2\u0102"+
+		"\u0103\7#\2\2\u0103\u0104\5\n\6\2\u0104\33\3\2\2\2\24)\67GIdln\u0086\u0089"+
+		"\u0090\u009b\u009d\u00c1\u00cd\u00d5\u00d7\u00e9\u00f8";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {
