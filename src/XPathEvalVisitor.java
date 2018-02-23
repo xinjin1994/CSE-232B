@@ -123,7 +123,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         ArrayList<Node> ret = new ArrayList<>();
         for(Node n : curr) {
             for(Node child : getChildren(n)) {
-                if(child.getNodeType() == Node.TEXT_NODE) {
+                if(child.getNodeType() == Node.TEXT_NODE && !child.getNodeValue().isEmpty() && !child.getNodeValue().equals("\n")) {
                     ret.add(child);
                 }
             }
@@ -302,8 +302,9 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     @Override
     public ArrayList<Node> visitXq_var(XPathParser.Xq_varContext ctx) {
         String varName = ctx.var().NAME().getText();
-        ArrayList<Node> result = new ArrayList<>();
-        result = varMap.get(varName);
+        ArrayList<Node> result = new ArrayList<>(varMap.get(varName));
+//        if(result.size()>1)
+//            System.out.println("stop");
 //        if (result.isEmpty()) {
 //            throw new RuntimeException("no such variable: " + varName);
 //        }
@@ -437,11 +438,6 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         return result;
     }
 
-    @Override
-    public ArrayList<Node> visitForClause(XPathParser.ForClauseContext ctx) {
-        return super.visitForClause(ctx);
-    }
-
 
     @Override
     public ArrayList<Node> visitLetClause(XPathParser.LetClauseContext ctx) {
@@ -454,9 +450,9 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     @Override
     public ArrayList<Node> visitCond_equal(XPathParser.Cond_equalContext ctx) {
         ArrayList<Node> tmp = new ArrayList<>(curr);
-        ArrayList<Node> ret1 = visit(ctx.xq(0));
+        ArrayList<Node> ret1 = new ArrayList<>(visit(ctx.xq(0)));
         curr = new ArrayList<>(tmp);
-        ArrayList<Node> ret2 = visit(ctx.xq(1));
+        ArrayList<Node> ret2 = new ArrayList<>(visit(ctx.xq(1)));
         curr = new ArrayList<>(tmp);
         ArrayList<Node> ret = new ArrayList<>();
 //        if(ret1 == null && ret2 == null) {
@@ -487,9 +483,9 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     @Override
     public ArrayList<Node> visitCond_is(XPathParser.Cond_isContext ctx) {
         ArrayList<Node> tmp = new ArrayList<>(curr);
-        ArrayList<Node> ret1 = visit(ctx.xq(0));
+        ArrayList<Node> ret1 = new ArrayList<>(visit(ctx.xq(0)));
         curr = new ArrayList<>(tmp);
-        ArrayList<Node> ret2 = visit(ctx.xq(1));
+        ArrayList<Node> ret2 =new ArrayList<>(visit(ctx.xq(1)));
         curr = new ArrayList<>(tmp);
         ArrayList<Node> ret = new ArrayList<>();
         for(Node node1 : ret1) {
