@@ -35,7 +35,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         }
         if(inputDoc != null) {
             inputDoc.getDocumentElement().normalize();
-            ret.add(doc);
+            ret.add(inputDoc);
         }
         curr = ret;
         return ret;
@@ -112,6 +112,9 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     public ArrayList<Node> visitRp_dotdot(XPathParser.Rp_dotdotContext ctx) {
         HashSet<Node> par = new HashSet<Node>();
         for(Node n : curr) {
+            if(n == inputDoc) {
+                throw new RuntimeException("No more parent nodes!" );
+            }
             par.add(n.getParentNode());
         }
         curr = new ArrayList<Node>(par);
@@ -302,12 +305,10 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     @Override
     public ArrayList<Node> visitXq_var(XPathParser.Xq_varContext ctx) {
         String varName = ctx.var().NAME().getText();
+        if (!varMap.containsKey(varName)) {
+            throw new RuntimeException("no such variable: " + varName);
+        }
         ArrayList<Node> result = new ArrayList<>(varMap.get(varName));
-//        if(result.size()>1)
-//            System.out.println("stop");
-//        if (result.isEmpty()) {
-//            throw new RuntimeException("no such variable: " + varName);
-//        }
         return result;
     }
 
@@ -372,9 +373,9 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     @Override
     public ArrayList<Node> visitXq_tag(XPathParser.Xq_tagContext ctx) {
         String tagName = ctx.NAME(0).getText();
-//        if (!tagName.equals(ctx.NAME(1).getText())) {
-//            throw new RuntimeException("Invalid tag name");
-//        }
+        if (!tagName.equals(ctx.NAME(1).getText())) {
+            throw new RuntimeException("Invalid tag name");
+        }
         ArrayList<Node> ret = visit(ctx.xq());
         ArrayList<Node> result = new ArrayList<>();
         result.add(makeElem(tagName, ret));
@@ -515,13 +516,16 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
 
     @Override
     public ArrayList<Node> visitCond_satisfy(XPathParser.Cond_satisfyContext ctx) {
+        HashMap<String, ArrayList<Node>> preMap = new HashMap<>(varMap);
         for (int i = 0; i < ctx.var().size(); i++) {
             String v = ctx.var(i).NAME().getText();
-            Set<Node> ret = new HashSet<Node>(visit(ctx.xq(i)));
+            Set<Node> ret = new HashSet<>(visit(ctx.xq(i)));
             ArrayList<Node> res = new ArrayList<>(ret);
             varMap.put(v, res);
         }
-        return visit(ctx.cond());
+        ArrayList<Node> result = new ArrayList<>(visit(ctx.cond()));
+        varMap = preMap;
+        return result;
     }
 
     @Override

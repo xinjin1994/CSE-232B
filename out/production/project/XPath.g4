@@ -2,6 +2,7 @@ grammar XPath;
 
 doc
     :   'doc' '(' filename ')'
+    |   'document' '(' filename ')'
     ;
 
 ap

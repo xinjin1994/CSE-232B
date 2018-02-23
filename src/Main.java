@@ -44,7 +44,7 @@ public class Main {
         } catch (ParserConfigurationException ex) {
             return ;
         }
-        Element ele = doc.createElement("init");
+        Element ele = doc.createElement("INIT");
         for(Node element : finalResult){
             if(element != null) {
                 Node importedNode = doc.importNode(element, true);
