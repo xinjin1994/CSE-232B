@@ -41,11 +41,11 @@ xq
     |   stringConstant      #xq_strConstant
     |   ap                  #xq_ap
     |   '(' xq ')'          #xq_paren
-    |   xq ',' xq           #xq_combine
     |   xq '/' rp           #xq_descendant
     |   xq '//' rp          #xq_all
     |   '<' NAME '>' '{' xq '}' '<''/' NAME '>'  #xq_tag
     |   '<' NAME '>'  xq  '<''/' NAME '>'  #xq_tag
+    |   xq ',' xq           #xq_combine
     |   forClause letClause? whereClause? returnClause  #xq_FLWR
     |   letClause xq        #xq_let
     |   joinClause          #xq_join
