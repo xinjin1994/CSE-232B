@@ -198,6 +198,13 @@ public interface XPathVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitXq_var(XPathParser.Xq_varContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code xq_join}
+	 * labeled alternative in {@link XPathParser#xq}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitXq_join(XPathParser.Xq_joinContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code xq_combine}
 	 * labeled alternative in {@link XPathParser#xq}.
 	 * @param ctx the parse tree
@@ -323,4 +330,16 @@ public interface XPathVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitReturnClause(XPathParser.ReturnClauseContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link XPathParser#joinClause}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJoinClause(XPathParser.JoinClauseContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link XPathParser#attribute}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAttribute(XPathParser.AttributeContext ctx);
 }

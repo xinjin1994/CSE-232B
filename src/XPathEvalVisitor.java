@@ -15,6 +15,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     private HashMap<String, ArrayList<Node>> varMap = new HashMap<>();
     private Stack<HashMap<String, ArrayList<Node>>> mapStack = new Stack<>();
     private Document inputDoc, outputDoc;
+    private boolean joinSign = false;
 
 
     @Override
@@ -29,11 +30,10 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
             DocumentBuilder db = dbf.newDocumentBuilder();
             doc = db.parse(file);
             inputDoc = doc;
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        if(inputDoc != null) {
+        if (inputDoc != null) {
             inputDoc.getDocumentElement().normalize();
             ret.add(inputDoc);
         }
@@ -46,7 +46,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         this.visit(ctx.doc());
         LinkedList<Node> tmp = new LinkedList<>(curr);
         ArrayList<Node> ret = new ArrayList<>(curr);
-        while(!tmp.isEmpty()) {
+        while (!tmp.isEmpty()) {
             Node n = tmp.poll();
             tmp.addAll(getChildren(n));
             ret.addAll(getChildren(n));
@@ -58,7 +58,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     private ArrayList<Node> getChildren(Node n) {
         ArrayList<Node> ret = new ArrayList<>();
         NodeList nList = n.getChildNodes();
-        for(int i=0; i<nList.getLength();i++){
+        for (int i = 0; i < nList.getLength(); i++) {
             ret.add(nList.item(i));
         }
         return ret;
@@ -75,8 +75,8 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     @Override
     public ArrayList<Node> visitRp_tagName(XPathParser.Rp_tagNameContext ctx) {
         ArrayList<Node> ret = new ArrayList<>();
-        for(Node n : curr) {
-            for(Node child: getChildren(n)) {
+        for (Node n : curr) {
+            for (Node child : getChildren(n)) {
                 if (child.getNodeType() == Node.ELEMENT_NODE) {
                     Element el = (Element) child;
                     if (el.getTagName().equals(ctx.NAME().getText())) {
@@ -94,8 +94,8 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     @Override
     public ArrayList<Node> visitRp_star(XPathParser.Rp_starContext ctx) {
         ArrayList<Node> ret = new ArrayList<>();
-        for(Node n : curr){
-            for(Node child :getChildren(n)) {
+        for (Node n : curr) {
+            for (Node child : getChildren(n)) {
                 ret.add(child);
             }
         }
@@ -111,9 +111,9 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     @Override
     public ArrayList<Node> visitRp_dotdot(XPathParser.Rp_dotdotContext ctx) {
         HashSet<Node> par = new HashSet<Node>();
-        for(Node n : curr) {
-            if(n == inputDoc) {
-                throw new RuntimeException("No more parent nodes!" );
+        for (Node n : curr) {
+            if (n == inputDoc) {
+                throw new RuntimeException("No more parent nodes!");
             }
             par.add(n.getParentNode());
         }
@@ -124,9 +124,9 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     @Override
     public ArrayList<Node> visitRp_text(XPathParser.Rp_textContext ctx) {
         ArrayList<Node> ret = new ArrayList<>();
-        for(Node n : curr) {
-            for(Node child : getChildren(n)) {
-                if(child.getNodeType() == Node.TEXT_NODE && !child.getNodeValue().isEmpty() && !child.getNodeValue().equals("\n")) {
+        for (Node n : curr) {
+            for (Node child : getChildren(n)) {
+                if (child.getNodeType() == Node.TEXT_NODE && !child.getNodeValue().isEmpty() && !child.getNodeValue().equals("\n")) {
                     ret.add(child);
                 }
             }
@@ -139,14 +139,14 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     public ArrayList<Node> visitRp_attName(XPathParser.Rp_attNameContext ctx) {
         ArrayList<Node> ret = new ArrayList<>();
         String attrName = ctx.NAME().getText();
-        for(Node n : curr) {
-            if(n.getNodeType() != Node.ELEMENT_NODE) {
+        for (Node n : curr) {
+            if (n.getNodeType() != Node.ELEMENT_NODE) {
                 continue;
             }
-            String attr = ((Element)n).getAttribute(attrName);
-            if(attr != "") {
+            String attr = ((Element) n).getAttribute(attrName);
+            if (attr != "") {
                 ret.add(n);
-                attr = attrName +"=\""+ attr +"\"";
+                attr = attrName + "=\"" + attr + "\"";
                 System.out.println(attr);
             }
         }
@@ -170,7 +170,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         this.visit(ctx.rp(0));
         LinkedList<Node> tmp = new LinkedList<>(curr);
         ArrayList<Node> ret = new ArrayList<>(curr);
-        while(!tmp.isEmpty()) {
+        while (!tmp.isEmpty()) {
             Node n = tmp.poll();
             tmp.addAll(getChildren(n));
             ret.addAll(getChildren(n));
@@ -184,7 +184,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         this.visit(ctx.rp());
         ArrayList<Node> tmp = new ArrayList<Node>(curr);
         ArrayList<Node> ret = new ArrayList<Node>();
-        for(Node n : tmp) {
+        for (Node n : tmp) {
             curr = new ArrayList<Node>();
             curr.add(n);
             ArrayList<Node> filter = visit(ctx.filter());
@@ -223,16 +223,16 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         ArrayList<Node> ret2 = this.visit(ctx.rp(1));
         curr = new ArrayList<>(tmp);
         boolean flag = false;
-        for(Node n1 : ret1) {
-            for(Node n2 :ret2) {
-                if(n1.isEqualNode(n2)) {
+        for (Node n1 : ret1) {
+            for (Node n2 : ret2) {
+                if (n1.isEqualNode(n2)) {
                     flag = true;
                     break;
                 }
             }
         }
         ArrayList<Node> ret = new ArrayList<>();
-        if(flag) ret = curr;
+        if (flag) ret = curr;
         return ret;
     }
 
@@ -244,16 +244,16 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         ArrayList<Node> ret2 = this.visit(ctx.rp(1));
         curr = new ArrayList<>(tmp);
         boolean flag = false;
-        for(Node n1 : ret1) {
-            for(Node n2 :ret2) {
-                if(n1 == n2) {
+        for (Node n1 : ret1) {
+            for (Node n2 : ret2) {
+                if (n1 == n2) {
                     flag = true;
                     break;
                 }
             }
         }
         ArrayList<Node> ret = new ArrayList<>();
-        if(flag) ret = curr;
+        if (flag) ret = curr;
         return ret;
     }
 
@@ -290,11 +290,11 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     public ArrayList<Node> visitFilter_not(XPathParser.Filter_notContext ctx) {
         ArrayList<Node> tmp = new ArrayList<Node>(curr);
         ArrayList<Node> ret = new ArrayList<Node>();
-        for(Node n : tmp) {
+        for (Node n : tmp) {
             curr = new ArrayList<Node>();
             curr.add(n);
             ArrayList<Node> filter = visit(ctx.filter());
-            if(filter.isEmpty()) {
+            if (filter.isEmpty()) {
                 ret.add(n);
             }
         }
@@ -359,7 +359,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         curr = ret;
         LinkedList<Node> tmp = new LinkedList<>(curr);
         ArrayList<Node> res = new ArrayList<>(curr);
-        while(!tmp.isEmpty()) {
+        while (!tmp.isEmpty()) {
             Node n = tmp.poll();
             tmp.addAll(getChildren(n));
             res.addAll(getChildren(n));
@@ -405,11 +405,10 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
             }
             if (ctx.whereClause() != null) {
                 ArrayList<Node> whereRes = visit(ctx.whereClause());
-                if(!whereRes.isEmpty()) {
+                if (!whereRes.isEmpty()) {
                     result.addAll(visit(ctx.returnClause()));
                 }
-            }
-            else {
+            } else {
                 result.addAll(visit(ctx.returnClause()));
             }
             return;
@@ -422,7 +421,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
             ArrayList<Node> tmp = new ArrayList<>();
             tmp.add(n);
             varMap.put(varName, tmp);
-            FLWRHelper(ctx, index+1, result);
+            FLWRHelper(ctx, index + 1, result);
             varMap = mapStack.pop();
         }
         return;
@@ -462,16 +461,16 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
 //            list.add(flag);
 //            return list;
 //        }
-        for(Node n1 : ret1) {
-            for(Node n2 :ret2) {
-                if (n1.getNodeType() == Node.TEXT_NODE || n2.getNodeType() == Node.TEXT_NODE){
-                    if (n1.getTextContent().equals(n2.getTextContent())){
+        for (Node n1 : ret1) {
+            for (Node n2 : ret2) {
+                if (n1.getNodeType() == Node.TEXT_NODE || n2.getNodeType() == Node.TEXT_NODE) {
+                    if (n1.getTextContent().equals(n2.getTextContent())) {
                         Node flag = null;
                         ret.add(flag);
                         return ret;
                     }
                 }
-                if(n1.isEqualNode(n2)) {
+                if (n1.isEqualNode(n2)) {
                     Node flag = null;
                     ret.add(flag);
                     return ret;
@@ -486,12 +485,12 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         ArrayList<Node> tmp = new ArrayList<>(curr);
         ArrayList<Node> ret1 = new ArrayList<>(visit(ctx.xq(0)));
         curr = new ArrayList<>(tmp);
-        ArrayList<Node> ret2 =new ArrayList<>(visit(ctx.xq(1)));
+        ArrayList<Node> ret2 = new ArrayList<>(visit(ctx.xq(1)));
         curr = new ArrayList<>(tmp);
         ArrayList<Node> ret = new ArrayList<>();
-        for(Node node1 : ret1) {
-            for(Node node2 :ret2) {
-                if(node1 == node2) {
+        for (Node node1 : ret1) {
+            for (Node node2 : ret2) {
+                if (node1 == node2) {
                     Node flag = null;
                     ret.add(flag);
                     return ret;
@@ -537,7 +536,7 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     public ArrayList<Node> visitCond_and(XPathParser.Cond_andContext ctx) {
         ArrayList<Node> ret1 = visit(ctx.cond(0));
         ArrayList<Node> ret2 = visit(ctx.cond(1));
-        if(!ret1.isEmpty() && !ret2.isEmpty()) {
+        if (!ret1.isEmpty() && !ret2.isEmpty()) {
             return ret1;
         }
         return new ArrayList<>();
@@ -547,10 +546,10 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     public ArrayList<Node> visitCond_or(XPathParser.Cond_orContext ctx) {
         ArrayList<Node> ret1 = visit(ctx.cond(0));
         ArrayList<Node> ret2 = visit(ctx.cond(1));
-        if(!ret1.isEmpty()) {
+        if (!ret1.isEmpty()) {
             return ret1;
         }
-        if(!ret2.isEmpty()) {
+        if (!ret2.isEmpty()) {
             return ret2;
         }
         return new ArrayList<>();
@@ -559,10 +558,9 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
     @Override
     public ArrayList<Node> visitCond_not(XPathParser.Cond_notContext ctx) {
         ArrayList<Node> result = visit(ctx.cond());
-        if(!result.isEmpty()) {
+        if (!result.isEmpty()) {
             return new ArrayList<>();
-        }
-        else {
+        } else {
             ArrayList<Node> ret = new ArrayList<>();
             Node tmp = null;
             ret.add(tmp);
@@ -608,4 +606,152 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
         return tag;
     }
 
+    @Override
+    public ArrayList<Node> visitXq_join(XPathParser.Xq_joinContext ctx) {
+        return visit(ctx.joinClause());
+    }
+
+    @Override
+    public ArrayList<Node> visitJoinClause(XPathParser.JoinClauseContext ctx) {
+        HashMap<String, ArrayList<Node>> preMap = new HashMap<>(varMap);
+        ArrayList<Node> ret1 = visit(ctx.xq(0));
+        varMap = new HashMap<>(preMap);
+        ArrayList<Node> ret2 = visit(ctx.xq(1));
+//        varMap = new HashMap<>(preMap);
+        ArrayList<Node> result = new ArrayList<>();
+
+        int attrSize = ctx.attribute(0).NAME().size();
+
+
+        ArrayList<HashMap<String, ArrayList<Node>>> MapList = new ArrayList<>();
+        for (int i = 0; i < attrSize; i++) {
+            String attrName = ctx.attribute(0).NAME(i).getText();
+            HashMap<String, ArrayList<Node>> attrMap = new HashMap<>();
+            for (Node n : ret1) {
+                Node key = ((Element) n).getElementsByTagName(attrName).item(0);
+                if (((Element) key).getTagName().equals(attrName)) {
+                    String keyStr = key.getTextContent();
+                    if (!attrMap.containsKey(keyStr)) {
+                        ArrayList<Node> tmp = new ArrayList<>();
+                        attrMap.put(keyStr, tmp);
+                    }
+                    attrMap.get(keyStr).add(n);
+                }
+            }
+            MapList.add(attrMap);
+        }
+
+        if (attrSize == 0) {
+            for (Node n1 : ret1) {
+                for (Node n2 : ret2) {
+                    ArrayList<Node> newList = new ArrayList<>();
+                    newList.addAll(getChildren(n1));
+                    newList.addAll(getChildren(n2));
+                    result.add(makeElem("tuple", newList));
+                }
+            }
+            return result;
+        }
+
+        ArrayList<Node> currNode = new ArrayList<>(ret2);
+
+        for (int i = 0; i < attrSize; i++) {
+            String attrName1 = ctx.attribute(0).NAME(i).getText();
+            String attrName2 = ctx.attribute(1).NAME(i).getText();
+            Set<Node> tmp = new HashSet<>();
+            for (Node n2 : currNode) {
+                Node compare = ((Element) n2).getElementsByTagName(attrName2).item(0);
+                String compareStr = compare.getTextContent();
+                if (!MapList.get(i).containsKey(compareStr)) {
+                    continue;
+                }
+                Node compareChild = compare.getFirstChild();
+                for (Node n1 : MapList.get(i).get(compareStr)) {
+                    Node base = ((Element) n1).getElementsByTagName(attrName1).item(0);
+                    Node baseChild = base.getFirstChild();
+                    String baseStr = baseChild.getTextContent();
+                    if (compareChild.getNodeType() == Node.TEXT_NODE || baseChild.getNodeType() == Node.TEXT_NODE) {
+                        if (compareChild.getTextContent().equals(baseChild.getTextContent())) {
+                           if (i == 0) {
+                               ArrayList<Node> newList = new ArrayList<>();
+                               for (Node child1: getChildren(n1)) {
+                                   newList.add(child1.cloneNode(true));
+                               }
+                               for (Node child2: getChildren(n2)) {
+                                   newList.add(child2.cloneNode(true));
+                               }
+                                tmp.add(makeElem("tuple", newList));
+                          } else {
+                                tmp.add(n2);
+                            }
+                        }
+                    } else {
+                        if (compareChild.isEqualNode(baseChild)) {
+                            if (i!=0) {
+                                tmp.add(n2);
+                            }
+                            else {
+                                ArrayList<Node> newList = new ArrayList<>();
+                                for (Node child1: getChildren(n1)) {
+                                    newList.add(child1.cloneNode(true));
+                                }
+                                for (Node child2: getChildren(n2)) {
+                                    newList.add(child2.cloneNode(true));
+                                }
+//                                newList.addAll(getChildren(n1));
+//                                newList.addAll(getChildren(n2));
+                                tmp.add(makeElem("tuple", newList));
+                            }
+                        }
+                    }
+                }
+
+            }
+            currNode = new ArrayList<>(tmp);
+        }
+
+//        for (Node n2: ret2) {
+//            for (int i = 0; i < attrSize; i++) {
+//                String attrName1 = ctx.attribute(0).NAME(i).getText();
+//                String attrName2 = ctx.attribute(1).NAME(i).getText();
+//                Node compare = ((Element) n2).getElementsByTagName(attrName2).item(0);
+//                String compareStr = compare.getTextContent();
+//                if (!MapList.get(i).containsKey(compareStr)) {
+//                    break;
+//                }
+//                Node compareChild = compare.getFirstChild();
+//                for (Node n1 : MapList.get(i).get(compareStr)) {
+//                    Node base = ((Element) n1).getElementsByTagName(attrName1).item(0);
+//                    Node baseChild = base.getFirstChild();
+//                    String baseStr = baseChild.getTextContent();
+//                    if (compareChild.getNodeType() == Node.TEXT_NODE || baseChild.getNodeType() == Node.TEXT_NODE) {
+//                        if (compareChild.getTextContent().equals(baseChild.getTextContent())) {
+//                            ArrayList<Node> newList = new ArrayList<>();
+//                            newList.addAll(getChildren(n1));
+//                            newList.addAll(getChildren(n2));
+//                            tmp.add(makeElem("tuple", newList));
+//                        }
+//                    } else {
+//                        if (compareChild.isEqualNode(baseChild)) {
+//                            ArrayList<Node> newList = new ArrayList<>();
+//                            newList.addAll(getChildren(n1));
+//                            newList.addAll(getChildren(n2));
+//                            tmp.add(makeElem("tuple", newList));
+//                        }
+//                    }
+//                }
+//
+//            }
+//        }
+        joinSign = true;
+        result = currNode;
+//        curr = result;
+        return result;
+    }
+
 }
+
+
+
+
+

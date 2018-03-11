@@ -45,8 +45,10 @@ xq
     |   xq '/' rp           #xq_descendant
     |   xq '//' rp          #xq_all
     |   '<' NAME '>' '{' xq '}' '<''/' NAME '>'  #xq_tag
+    |   '<' NAME '>'  xq  '<''/' NAME '>'  #xq_tag
     |   forClause letClause? whereClause? returnClause  #xq_FLWR
     |   letClause xq        #xq_let
+    |   joinClause          #xq_join
     ;
 
 cond
@@ -74,13 +76,6 @@ stringConstant
     :   STRING
     ;
 
-//beginTag
-//    : '<' NAME '>'
-//    ;
-//
-//endTag
-//    : '<' '/' NAME '>'
-//    ;
 
 forClause
     : 'for' (var 'in' xq ',' )* var 'in' xq
@@ -97,6 +92,15 @@ whereClause
 returnClause
     : 'return' xq
     ;
+
+joinClause
+    :  'join' '(' xq ',' xq ',' attribute ',' attribute')'
+    ;
+
+attribute
+    : '[' NAME ? (',' NAME )* ']'
+    ;
+
 /*
  * ===========================
  * String/Integers Primitives

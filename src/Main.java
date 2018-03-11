@@ -2,6 +2,7 @@ import java.io.File;
 import java.nio.file.*;
 import java.nio.charset.*;
 import java.io.IOException;
+import java.io.PrintWriter;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.gui.TreeViewer;
@@ -10,9 +11,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import java.util.*;
 
-import java.util.Arrays;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
@@ -28,46 +26,52 @@ public class Main {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
 
         XPathParser parser = new XPathParser(tokens);
-        ParseTree tree = parser.xq();
-        XPathEvalVisitor eval = new XPathEvalVisitor();
-        ArrayList<Node> finalResult = eval.visit(tree);
+        boolean rewrite = false;
+        if (rewrite) {
+            XPathParser.XqContext FLWRctx = parser.xq();
+            XQueryRewriter rewriter = new XQueryRewriter();
+            rewriter.parseFLWR(FLWRctx);
+            String rewirteXq = rewriter.constructJoin();
+            try (PrintWriter out = new PrintWriter("rewriteFile.txt")) {
+                out.println(rewirteXq);
+            }
+//            lexer = new XPathLexer(new ANTLRFileStream("rewriteFile.txt"));
+//            tokens = new CommonTokenStream(lexer);
+//
+//            parser = new XPathParser(tokens);
+        } else {
+            ParseTree tree = parser.xq();
+            XPathEvalVisitor eval = new XPathEvalVisitor();
+            ArrayList<Node> finalResult = eval.visit(tree);
 //        System.out.println("\n===========================================================================");
 //        for (Node n : finalResult) {
 //            System.out.println(n.getTextContent());
 //        }
 //        System.out.println(finalResult.size() + " results\n");
 
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        Document doc;
-        try {
-            doc = dbf.newDocumentBuilder().newDocument();
-        } catch (ParserConfigurationException ex) {
-            return ;
-        }
-        Element ele = doc.createElement("INIT");
-        for(Node element : finalResult){
-            if(element != null) {
-                Node importedNode = doc.importNode(element, true);
-                ele.appendChild(importedNode);
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            Document doc;
+            try {
+                doc = dbf.newDocumentBuilder().newDocument();
+            } catch (ParserConfigurationException ex) {
+                return;
             }
-        }
-        doc.appendChild(ele);
-        // write the content into xml file
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer = transformerFactory.newTransformer();
-        DOMSource source = new DOMSource(doc);
-        StreamResult result = new StreamResult(new File("xqueries.xml"));
+            Element ele = doc.createElement("INIT");
+            for (Node element : finalResult) {
+                if (element != null) {
+                    Node importedNode = doc.importNode(element, true);
+                    ele.appendChild(importedNode);
+                }
+            }
+            doc.appendChild(ele);
+            // write the content into xml file
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource source = new DOMSource(doc);
+            StreamResult result = new StreamResult(new File("xqueries.xml"));
 
-        transformer.transform(source, result);
-//            JFrame frame = new JFrame("Antlr AST");
-//            JPanel panel = new JPanel();
-//            TreeViewer viewr = new TreeViewer(Arrays.asList(
-//                    parser.getRuleNames()),tree);
-//            viewr.setScale(1.5);//scale a little
-//            panel.add(viewr);
-//            frame.add(panel);
-//            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//            frame.setSize(200,200);
-//            frame.setVisible(true);
+            transformer.transform(source, result);
+
+        }
     }
 }

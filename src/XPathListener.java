@@ -329,6 +329,18 @@ public interface XPathListener extends ParseTreeListener {
 	 */
 	void exitXq_var(XPathParser.Xq_varContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code xq_join}
+	 * labeled alternative in {@link XPathParser#xq}.
+	 * @param ctx the parse tree
+	 */
+	void enterXq_join(XPathParser.Xq_joinContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code xq_join}
+	 * labeled alternative in {@link XPathParser#xq}.
+	 * @param ctx the parse tree
+	 */
+	void exitXq_join(XPathParser.Xq_joinContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code xq_combine}
 	 * labeled alternative in {@link XPathParser#xq}.
 	 * @param ctx the parse tree
@@ -542,4 +554,24 @@ public interface XPathListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitReturnClause(XPathParser.ReturnClauseContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link XPathParser#joinClause}.
+	 * @param ctx the parse tree
+	 */
+	void enterJoinClause(XPathParser.JoinClauseContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link XPathParser#joinClause}.
+	 * @param ctx the parse tree
+	 */
+	void exitJoinClause(XPathParser.JoinClauseContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link XPathParser#attribute}.
+	 * @param ctx the parse tree
+	 */
+	void enterAttribute(XPathParser.AttributeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link XPathParser#attribute}.
+	 * @param ctx the parse tree
+	 */
+	void exitAttribute(XPathParser.AttributeContext ctx);
 }

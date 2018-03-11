@@ -339,6 +339,18 @@ public class XPathBaseListener implements XPathListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterXq_join(XPathParser.Xq_joinContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitXq_join(XPathParser.Xq_joinContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterXq_combine(XPathParser.Xq_combineContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -562,6 +574,30 @@ public class XPathBaseListener implements XPathListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitReturnClause(XPathParser.ReturnClauseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterJoinClause(XPathParser.JoinClauseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitJoinClause(XPathParser.JoinClauseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAttribute(XPathParser.AttributeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAttribute(XPathParser.AttributeContext ctx) { }
 
 	/**
 	 * {@inheritDoc}
