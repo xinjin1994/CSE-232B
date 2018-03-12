@@ -241,9 +241,14 @@ public class XQueryRewriter {
         ArrayList<String> varPairs = condPairs.get(root1+"+"+root2);
         for (int i=0; i<varPairs.size(); i++) {
             String[] vars = varPairs.get(i).split("(eq)|(=)");
-            condEle1 = condEle1 + vars[0].substring(1) + ",";
-            condEle2 = condEle2 + vars[1].substring(1) + ",";
-
+            if (varToRoot.get(vars[0].substring(1)) == root1 && varToRoot.get(vars[1].substring(1)) ==root2) {
+                condEle1 = condEle1 + vars[0].substring(1) + ",";
+                condEle2 = condEle2 + vars[1].substring(1) + ",";
+            }
+            else if(varToRoot.get(vars[1].substring(1)) == root1 && varToRoot.get(vars[0].substring(1)) ==root2) {
+                condEle1 = condEle1 + vars[1].substring(1) + ",";
+                condEle2 = condEle2 + vars[0].substring(1) + ",";
+            }
         }
         constructed.put(root1, true);
         constructed.put(root2, true);

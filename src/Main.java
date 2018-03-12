@@ -26,7 +26,7 @@ public class Main {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
 
         XPathParser parser = new XPathParser(tokens);
-        boolean rewrite = false;
+        boolean rewrite = true;
         if (rewrite) {
             XPathParser.XqContext FLWRctx = parser.xq();
             XQueryRewriter rewriter = new XQueryRewriter();
@@ -35,10 +35,10 @@ public class Main {
             try (PrintWriter out = new PrintWriter("rewriteFile.txt")) {
                 out.println(rewirteXq);
             }
-//            lexer = new XPathLexer(new ANTLRFileStream("rewriteFile.txt"));
-//            tokens = new CommonTokenStream(lexer);
-//
-//            parser = new XPathParser(tokens);
+            lexer = new XPathLexer(new ANTLRFileStream("rewriteFile.txt"));
+            tokens = new CommonTokenStream(lexer);
+
+            parser = new XPathParser(tokens);
         } else {
             ParseTree tree = parser.xq();
             XPathEvalVisitor eval = new XPathEvalVisitor();
