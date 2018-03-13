@@ -17,15 +17,16 @@ public class XQueryRewriter {
     private String returnString = "";
 
 
-    public void parseFLWR(XPathParser.XqContext ctx) {
+    public String parseFLWR(XPathParser.XqContext ctx) {
         if ( !(ctx instanceof XPathParser.Xq_FLWRContext) ){
-            return;
+            return null;
         }
         XPathParser.ForClauseContext forCtx = ((XPathParser.Xq_FLWRContext)ctx).forClause();
         XPathParser.WhereClauseContext whereCtx = ((XPathParser.Xq_FLWRContext)ctx).whereClause();
         XPathParser.ReturnClauseContext returnCtx = ((XPathParser.Xq_FLWRContext)ctx).returnClause();
 
         // Union find var
+        int rootNum = 0;
         for (int i=0; i<forCtx.var().size(); i++) {
             String var = forCtx.var(i).NAME().getText();
             String xq = forCtx.xq(i).getText();
@@ -38,6 +39,7 @@ public class XQueryRewriter {
                     if (!varToRoot.containsKey(var)) {
                         varToRoot.put(var, var);
                     }
+                    rootNum++;
                 }
             }
             else {
@@ -51,7 +53,7 @@ public class XQueryRewriter {
                 }
             }
         }
-
+        if (rootNum <=1) return null;
         // Union find where
         String condXq = whereCtx.cond().getText();
         String[] pairs = condXq.split("and");
@@ -127,6 +129,7 @@ public class XQueryRewriter {
                 }
             }
         }
+        if (condPairs.size()==0) return null;
         // Single Set process
         for (String root: varGraph.keySet()) {
             if (!labeled.containsKey(root)) {
@@ -138,6 +141,8 @@ public class XQueryRewriter {
 
         // parse return
         originalReturn = returnCtx.xq().getText();
+
+        return constructJoin();
     }
 
 

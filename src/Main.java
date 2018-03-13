@@ -26,52 +26,67 @@ public class Main {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
 
         XPathParser parser = new XPathParser(tokens);
+        ArrayList<Node> finalResult = new ArrayList<>();
         boolean rewrite = true;
         if (rewrite) {
             XPathParser.XqContext FLWRctx = parser.xq();
             XQueryRewriter rewriter = new XQueryRewriter();
-            rewriter.parseFLWR(FLWRctx);
-            String rewirteXq = rewriter.constructJoin();
-            try (PrintWriter out = new PrintWriter("rewriteFile.txt")) {
-                out.println(rewirteXq);
-            }
-            lexer = new XPathLexer(new ANTLRFileStream("rewriteFile.txt"));
-            tokens = new CommonTokenStream(lexer);
 
-            parser = new XPathParser(tokens);
-        } else {
+            String rewirteXq = rewriter.parseFLWR(FLWRctx);
+
+            if (rewirteXq!= null) {
+                try (PrintWriter out = new PrintWriter("rewriteFile.txt")) {
+                    out.println(rewirteXq);
+                }
+                XPathLexer lexerNew = new XPathLexer(new ANTLRFileStream("rewriteFile.txt"));
+                CommonTokenStream tokensNew = new CommonTokenStream(lexerNew);
+
+                XPathParser parserNew = new XPathParser(tokensNew);
+
+                ParseTree tree = parserNew.xq();
+                XPathEvalVisitor eval = new XPathEvalVisitor();
+                finalResult = eval.visit(tree);
+            }
+            else {
+                try (PrintWriter out = new PrintWriter("rewriteFile.txt")) {
+                    out.println("Can not rewrite this query!");
+                }
+                XPathLexer lexerO = new XPathLexer(new ANTLRFileStream("XQueryTest.txt"));
+                CommonTokenStream tokensO = new CommonTokenStream(lexerO);
+
+                XPathParser parserO = new XPathParser(tokensO);
+
+                ParseTree tree = parserO.xq();
+                XPathEvalVisitor evalO = new XPathEvalVisitor();
+                finalResult = evalO.visit(tree);
+            }
+        }
+        else{
             ParseTree tree = parser.xq();
             XPathEvalVisitor eval = new XPathEvalVisitor();
-            ArrayList<Node> finalResult = eval.visit(tree);
-//        System.out.println("\n===========================================================================");
-//        for (Node n : finalResult) {
-//            System.out.println(n.getTextContent());
-//        }
-//        System.out.println(finalResult.size() + " results\n");
-
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            Document doc;
-            try {
-                doc = dbf.newDocumentBuilder().newDocument();
-            } catch (ParserConfigurationException ex) {
-                return;
-            }
-            Element ele = doc.createElement("INIT");
-            for (Node element : finalResult) {
-                if (element != null) {
-                    Node importedNode = doc.importNode(element, true);
-                    ele.appendChild(importedNode);
-                }
-            }
-            doc.appendChild(ele);
-            // write the content into xml file
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(new File("xqueries.xml"));
-
-            transformer.transform(source, result);
-
+            finalResult = eval.visit(tree);
         }
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        Document doc;
+        try {
+            doc = dbf.newDocumentBuilder().newDocument();
+        } catch (ParserConfigurationException ex) {
+            return;
+        }
+        Element ele = doc.createElement("INIT");
+        for (Node element : finalResult) {
+            if (element != null) {
+                Node importedNode = doc.importNode(element, true);
+                ele.appendChild(importedNode);
+            }
+        }
+        doc.appendChild(ele);
+        // write the content into xml file
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        DOMSource source = new DOMSource(doc);
+        StreamResult result = new StreamResult(new File("xqueries.xml"));
+
+        transformer.transform(source, result);
     }
 }
