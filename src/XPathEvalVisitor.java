@@ -655,69 +655,15 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
 
         ArrayList<Node> currNode = new ArrayList<>(ret2);
 
-        for (int i = 0; i < attrSize; i++) {
-            String attrName1 = ctx.attribute(0).NAME(i).getText();
-            String attrName2 = ctx.attribute(1).NAME(i).getText();
-            Set<Node> tmp = new HashSet<>();
-            for (Node n2 : currNode) {
-                Node compare = ((Element) n2).getElementsByTagName(attrName2).item(0);
-                String compareStr = compare.getTextContent();
-                if (!MapList.get(i).containsKey(compareStr)) {
-                    continue;
-                }
-                Node compareChild = compare.getFirstChild();
-                for (Node n1 : MapList.get(i).get(compareStr)) {
-                    Node base = ((Element) n1).getElementsByTagName(attrName1).item(0);
-                    Node baseChild = base.getFirstChild();
-                    String baseStr = baseChild.getTextContent();
-                    if (compareChild.getNodeType() == Node.TEXT_NODE || baseChild.getNodeType() == Node.TEXT_NODE) {
-                        if (compareChild.getTextContent().equals(baseChild.getTextContent())) {
-                           if (i == 0) {
-                               ArrayList<Node> newList = new ArrayList<>();
-                               for (Node child1: getChildren(n1)) {
-                                   newList.add(child1.cloneNode(true));
-                               }
-                               for (Node child2: getChildren(n2)) {
-                                   newList.add(child2.cloneNode(true));
-                               }
-                                tmp.add(makeElem("tuple", newList));
-                          } else {
-                                tmp.add(n2);
-                            }
-                        }
-                    } else {
-                        if (compareChild.isEqualNode(baseChild)) {
-                            if (i!=0) {
-                                tmp.add(n2);
-                            }
-                            else {
-                                ArrayList<Node> newList = new ArrayList<>();
-                                for (Node child1: getChildren(n1)) {
-                                    newList.add(child1.cloneNode(true));
-                                }
-                                for (Node child2: getChildren(n2)) {
-                                    newList.add(child2.cloneNode(true));
-                                }
-//                                newList.addAll(getChildren(n1));
-//                                newList.addAll(getChildren(n2));
-                                tmp.add(makeElem("tuple", newList));
-                            }
-                        }
-                    }
-                }
-
-            }
-            currNode = new ArrayList<>(tmp);
-        }
-
-//        for (Node n2: ret2) {
-//            for (int i = 0; i < attrSize; i++) {
-//                String attrName1 = ctx.attribute(0).NAME(i).getText();
-//                String attrName2 = ctx.attribute(1).NAME(i).getText();
+//        for (int i = 0; i < attrSize; i++) {
+//            String attrName1 = ctx.attribute(0).NAME(i).getText();
+//            String attrName2 = ctx.attribute(1).NAME(i).getText();
+//            Set<Node> tmp = new HashSet<>();
+//            for (Node n2 : currNode) {
 //                Node compare = ((Element) n2).getElementsByTagName(attrName2).item(0);
 //                String compareStr = compare.getTextContent();
 //                if (!MapList.get(i).containsKey(compareStr)) {
-//                    break;
+//                    continue;
 //                }
 //                Node compareChild = compare.getFirstChild();
 //                for (Node n1 : MapList.get(i).get(compareStr)) {
@@ -726,26 +672,118 @@ public class XPathEvalVisitor extends XPathBaseVisitor<ArrayList<Node>> {
 //                    String baseStr = baseChild.getTextContent();
 //                    if (compareChild.getNodeType() == Node.TEXT_NODE || baseChild.getNodeType() == Node.TEXT_NODE) {
 //                        if (compareChild.getTextContent().equals(baseChild.getTextContent())) {
-//                            ArrayList<Node> newList = new ArrayList<>();
-//                            newList.addAll(getChildren(n1));
-//                            newList.addAll(getChildren(n2));
-//                            tmp.add(makeElem("tuple", newList));
+//                           if (i == 0) {
+//                               ArrayList<Node> newList = new ArrayList<>();
+//                               for (Node child1: getChildren(n1)) {
+//                                   newList.add(child1.cloneNode(true));
+//                               }
+//                               for (Node child2: getChildren(n2)) {
+//                                   newList.add(child2.cloneNode(true));
+//                               }
+//                                tmp.add(makeElem("tuple", newList));
+//                          } else {
+//                                tmp.add(n2);
+//                            }
 //                        }
 //                    } else {
 //                        if (compareChild.isEqualNode(baseChild)) {
-//                            ArrayList<Node> newList = new ArrayList<>();
-//                            newList.addAll(getChildren(n1));
-//                            newList.addAll(getChildren(n2));
-//                            tmp.add(makeElem("tuple", newList));
+//                            if (i!=0) {
+//                                tmp.add(n2);
+//                            }
+//                            else {
+//                                ArrayList<Node> newList = new ArrayList<>();
+//                                for (Node child1: getChildren(n1)) {
+//                                    newList.add(child1.cloneNode(true));
+//                                }
+//                                for (Node child2: getChildren(n2)) {
+//                                    newList.add(child2.cloneNode(true));
+//                                }
+////                                newList.addAll(getChildren(n1));
+////                                newList.addAll(getChildren(n2));
+//                                tmp.add(makeElem("tuple", newList));
+//                            }
 //                        }
 //                    }
 //                }
 //
 //            }
+//            currNode = new ArrayList<>(tmp);
 //        }
+
+        if (attrSize >= 1) {
+            String attrName1 = ctx.attribute(0).NAME(0).getText();
+            String attrName2 = ctx.attribute(1).NAME(0).getText();
+            Set<Node> tmp = new HashSet<>();
+            for (Node n2 : currNode) {
+                Node compare = ((Element) n2).getElementsByTagName(attrName2).item(0);
+                String compareStr = compare.getTextContent();
+                if (!MapList.get(0).containsKey(compareStr)) {
+                    continue;
+                }
+                Node compareChild = compare.getFirstChild();
+                for (Node n1 : MapList.get(0).get(compareStr)) {
+                    Node base = ((Element) n1).getElementsByTagName(attrName1).item(0);
+                    Node baseChild = base.getFirstChild();
+                    String baseStr = baseChild.getTextContent();
+                    if (compareChild.getNodeType() == Node.TEXT_NODE || baseChild.getNodeType() == Node.TEXT_NODE) {
+                        if (compareChild.getTextContent().equals(baseChild.getTextContent())) {
+                               ArrayList<Node> newList = new ArrayList<>();
+                               for (Node child1: getChildren(n1)) {
+                                   newList.add(child1.cloneNode(true));
+                               }
+                               for (Node child2: getChildren(n2)) {
+                                   newList.add(child2.cloneNode(true));
+                               }
+                                tmp.add(makeElem("tuple", newList));
+                        }
+                    } else {
+                        if (compareChild.isEqualNode(baseChild)) {
+                            ArrayList<Node> newList = new ArrayList<>();
+                            for (Node child1: getChildren(n1)) {
+                                newList.add(child1.cloneNode(true));
+                            }
+                            for (Node child2: getChildren(n2)) {
+                                newList.add(child2.cloneNode(true));
+                            }
+//                                newList.addAll(getChildren(n1));
+//                                newList.addAll(getChildren(n2));
+                            tmp.add(makeElem("tuple", newList));
+                        }
+                    }
+                }
+
+            }
+            currNode = new ArrayList<>(tmp);
+        }
+
+        for (int i=1; i<attrSize; i++) {
+            String attrName1 = ctx.attribute(0).NAME(i).getText();
+            String attrName2 = ctx.attribute(1).NAME(i).getText();
+            Set<Node> tmp = new HashSet<>();
+            for (Node n2: currNode) {
+                Node compare = ((Element) n2).getElementsByTagName(attrName2).item(0);
+                Node base = ((Element) n2).getElementsByTagName(attrName1).item(0);
+                if(compare!=null && base!=null) {
+                    Node compareChild = compare.getFirstChild();
+                    Node baseChild = base.getFirstChild();
+                    if (compareChild.getNodeType() == Node.TEXT_NODE || baseChild.getNodeType() == Node.TEXT_NODE) {
+                        if (compareChild.getTextContent().equals(baseChild.getTextContent())) {
+                            tmp.add(n2);
+                        }
+                    }
+                    else {
+                        if (compareChild.isEqualNode(baseChild)) {
+                            tmp.add(n2);
+                        }
+                    }
+                }
+            }
+            currNode = new ArrayList<>(tmp);
+        }
+
         joinSign = true;
         result = currNode;
-//        curr = result;
+
         return result;
     }
 

@@ -1,8 +1,4 @@
-import javax.xml.xpath.XPath;
-import java.lang.reflect.Array;
 import java.util.*;
-
-// join every root node
 
 public class XQueryRewriter {
     private HashMap<String, ArrayList<String>> varGraph = new HashMap<>();
@@ -14,7 +10,6 @@ public class XQueryRewriter {
     private HashMap<String, Boolean> constructed = new HashMap();
     private HashMap<String, Boolean> labeled = new HashMap();
     private String originalReturn = "";
-    private String returnString = "";
 
 
     public String parseFLWR(XPathParser.XqContext ctx) {
@@ -118,9 +113,6 @@ public class XQueryRewriter {
                     }
                 }
                 else {
-//                    ArrayList<String> newTable = new ArrayList<>();
-//                    newTable.add(root1);
-//                    tableGraph.add(newTable);
                     if (!whereXq.containsKey(root1)) {
                         ArrayList<String> whereList = new ArrayList<>();
                         whereXq.put(root1, whereList);
@@ -214,7 +206,7 @@ public class XQueryRewriter {
 
     public String constructJoinEle(String root) {
         String joinEle = "for ";
-        String returnEle = "return <tuple>\n";
+        String returnEle = "return <tuple> {\n";
         ArrayList<String> currVars= varGraph.get(root);
         for (int i=0; i< currVars.size(); i++) {
             String var = currVars.get(i);
@@ -236,7 +228,7 @@ public class XQueryRewriter {
                 joinEle = joinEle + newWhere + "\n";
             }
         }
-        returnEle += "</tuple>,";
+        returnEle += "}</tuple>,";
         return joinEle+returnEle;
     }
 
