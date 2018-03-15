@@ -52,6 +52,11 @@ public class XQueryRewriter {
         // Union find where
         String condXq = whereCtx.cond().getText();
         String[] pairs = condXq.split("and");
+        for (String root : varGraph.keySet()){
+            ArrayList<String> table = new ArrayList<>();
+            table.add(root);
+            tableGraph.add(table);
+        }
         for (String pair: pairs) {
             String[] conds = pair.split("(eq)|(=)");
             // like "john"
@@ -89,26 +94,24 @@ public class XQueryRewriter {
                         condPairs.put(root1+ "+" +root2, condPair);
                     }
                     condPairs.get(root1+ "+" +root2).add(pair);
-                    for (int j=0; j<tableGraph.size(); j++) {
-                        if (tableGraph.get(j).contains(root1)) {
-                            tableGraph.get(j).add(root2);
-                            labeled.put(root2, true);
-                            connected = true;
-                            break;
+
+                    ArrayList<String> root1Position = new ArrayList<>();
+                    ArrayList<String> root2Position = new ArrayList<>();
+                    for (ArrayList<String> table : tableGraph){
+                        if (table.contains(root1)){
+                            root1Position = table;
                         }
-                        else if(tableGraph.get(j).contains(root2)){
-                            tableGraph.get(j).add(root1);
-                            labeled.put(root1, true);
-                            connected = true;
-                            break;
+                        if (table.contains(root2)){
+                            root2Position = table;
                         }
                     }
-                    if(!connected) {
+
+                    if(root1Position != root2Position) {
                         ArrayList<String> newTable = new ArrayList<>();
-                        newTable.add(root1);
-                        newTable.add(root2);
-                        labeled.put(root1, true);
-                        labeled.put(root2, true);
+                        newTable.addAll(root1Position);
+                        newTable.addAll(root2Position);
+                        tableGraph.remove(root1Position);
+                        tableGraph.remove(root2Position);
                         tableGraph.add(newTable);
                     }
                 }
@@ -122,14 +125,7 @@ public class XQueryRewriter {
             }
         }
         if (condPairs.size()==0) return null;
-        // Single Set process
-        for (String root: varGraph.keySet()) {
-            if (!labeled.containsKey(root)) {
-                ArrayList<String> newTable = new ArrayList<>();
-                newTable.add(root);
-                tableGraph.add(newTable);
-            }
-        }
+
 
         // parse return
         originalReturn = returnCtx.xq().getText();
@@ -198,6 +194,7 @@ public class XQueryRewriter {
                 }
 
                 joinRet += constructCondEle(root1, root2);
+
                 joinRet += "),\n\n";
             }
         }
@@ -236,19 +233,29 @@ public class XQueryRewriter {
         String condEle1 = "[";
         String condEle2 = "[";
         ArrayList<String> varPairs = condPairs.get(root1+"+"+root2);
-        for (int i=0; i<varPairs.size(); i++) {
+        for (int i = 0; i < varPairs.size(); i++) {
             String[] vars = varPairs.get(i).split("(eq)|(=)");
-            if (varToRoot.get(vars[0].substring(1)) == root1 && varToRoot.get(vars[1].substring(1)) ==root2) {
+            if (varToRoot.get(vars[0].substring(1)) == root1 && varToRoot.get(vars[1].substring(1)) == root2) {
                 condEle1 = condEle1 + vars[0].substring(1) + ",";
                 condEle2 = condEle2 + vars[1].substring(1) + ",";
-            }
-            else if(varToRoot.get(vars[1].substring(1)) == root1 && varToRoot.get(vars[0].substring(1)) ==root2) {
+            } else if (varToRoot.get(vars[1].substring(1)) == root1 && varToRoot.get(vars[0].substring(1)) == root2) {
                 condEle1 = condEle1 + vars[1].substring(1) + ",";
                 condEle2 = condEle2 + vars[0].substring(1) + ",";
             }
         }
-        constructed.put(root1, true);
-        constructed.put(root2, true);
+        if(!constructed.containsKey(root2) && !constructed.containsKey(root1)) {
+            constructed.put(root1, true);
+            constructed.put(root2, true);
+        }
+        else if(constructed.containsKey(root2)) {
+            String tmp = condEle1;
+            condEle1 = condEle2;
+            condEle2 = tmp;
+            constructed.put(root1, true);
+        }
+        else {
+            constructed.put(root2, true);
+        }
         return condEle1.substring(0,condEle1.length()-1) + "] , " + condEle2.substring(0, condEle2.length()-1) + "]";
     }
 
