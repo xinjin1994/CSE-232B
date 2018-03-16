@@ -173,6 +173,7 @@ public class XQueryRewriter {
             joinRet = constructJoinEle(currTable.get(0));
             return joinRet;
         }
+        Set<String> usedElements = new HashSet<>();
         for(int k=0; k<currTable.size(); k++) {
             for (int j = 0; j < currTable.size(); j++) {
                 String root1 = currTable.get(k);
@@ -180,20 +181,34 @@ public class XQueryRewriter {
                 if (!condPairs.containsKey(root1 + "+" + root2)) {
                     continue;
                 }
+
                 if(constructed.containsKey(root1) && constructed.containsKey(root2)) {
                     continue;
                 }
                 joinRet = "join ( \n" + joinRet;
-                if(!constructed.containsKey(root1)) {
+
+                if(!constructed.containsKey(root1) && !constructed.containsKey(root2)){
                     joinRet += constructJoinEle(root1);
                     joinRet += "\n\n";
-                }
-                if(!constructed.containsKey(root2)) {
                     joinRet += constructJoinEle(root2);
                     joinRet += "\n\n";
+                    usedElements.add(root1);
+                    usedElements.add(root2);
+                    joinRet += constructCondEle(root1, root2);
                 }
+                else if(constructed.containsKey(root1) && !constructed.containsKey(root2)) {
+                    joinRet += constructJoinEle(root2);
+                    joinRet += "\n\n";
+                    joinRet += constructCondEle(usedElements, root2);
+                    usedElements.add(root2);
 
-                joinRet += constructCondEle(root1, root2);
+                } else if(constructed.containsKey(root2) && !constructed.containsKey(root1)) {
+                    joinRet += constructJoinEle(root1);
+                    joinRet += "\n\n";
+                    joinRet += constructCondEle(usedElements, root1);
+                    usedElements.add(root1);
+
+                }
 
                 joinRet += "),\n\n";
             }
@@ -259,10 +274,38 @@ public class XQueryRewriter {
         return condEle1.substring(0,condEle1.length()-1) + "] , " + condEle2.substring(0, condEle2.length()-1) + "]";
     }
 
+    public String constructCondEle(Set<String> usedRoots, String unused) {
+        String condEle1 = "[";
+        String condEle2 = "[";
+        for (String root : usedRoots) {
+            if (!condPairs.containsKey(root + "+" + unused) && !condPairs.containsKey(unused + "+" + root) ){
+                continue;
+            }
+
+            ArrayList<String> varPairs = condPairs.get(root + "+" + unused) == null
+                    ? condPairs.get(unused + "+" + root)
+                    : condPairs.get(root + "+" + unused);
+            for (int i = 0; i < varPairs.size(); i++) {
+                String[] vars = varPairs.get(i).split("(eq)|(=)");
+
+                if (Objects.equals(varToRoot.get(vars[0].substring(1)), root) && varToRoot.get(vars[1].substring(1)) == unused) {
+                    condEle1 = condEle1 + vars[0].substring(1) + ",";
+                    condEle2 = condEle2 + vars[1].substring(1) + ",";
+                } else if (Objects.equals(varToRoot.get(vars[1].substring(1)), root) && varToRoot.get(vars[0].substring(1)) == unused) {
+                    condEle1 = condEle1 + vars[1].substring(1) + ",";
+                    condEle2 = condEle2 + vars[0].substring(1) + ",";
+                }
+            }
+        }
+        constructed.put(unused, true);
+
+        return condEle1.substring(0,condEle1.length()-1) + "] , " + condEle2.substring(0, condEle2.length()-1) + "]";
+    }
+
     public String constructReturn() {
-        String joinReturn = "return <result> {";
+        String joinReturn = "return";
         joinReturn += originalReturn.replaceAll("\\$([A-Za-z0-9_]+)", "\\$tuple/$1/*");
-        return joinReturn + "} </result>";
+        return joinReturn + "";
     }
 
 }
